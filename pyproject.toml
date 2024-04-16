@@ -1,15 +1,34 @@
-[tool.poetry]
-name = "pygrate"
-version = "0.1.0"
-description = ""
-authors = ["Artur Shyshko <arturshyshko@gmail.com>"]
-license = "MIT"
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pygrate"
+description = ""
+dynamic = ["version"]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+  {name = "Artur Shyshko"},
+]
+
+[tool]
+[tool.hatch]
+
+[tool.hatch.version]
+path = "src/pygrate/__about__.py"
+
+[tool.hatch.envs.tests]
+dependencies = [
+  "pytest",
+  "ruff",
+]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/docs",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pygrate"]
