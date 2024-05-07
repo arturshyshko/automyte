@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.1] 2023-05-07
 
 ### Added
-
-- v0.0.1 Add changelog file + projects classifiers
+- v0.0.1 Go back to hatch default build/test envs and setup automyte script (1bcdf8b)
+- v0.0.1 Add changelog file + projects classifiers (c7fbe16)
 - v0.0.1 Setup basic main entrypoint with smoke tests (3ae3040)
 - v0.0.1 Setup basic tools + gitignore (70f1259)
 
