@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pygrate"
+name = "automyte"
 description = ""
 dynamic = ["version"]
 requires-python = ">=3.10"
@@ -13,11 +13,14 @@ authors = [
   {name = "Artur Shyshko"},
 ]
 
+[project.scripts]
+automyte = "automyte:migrate"
+
 [tool]
 [tool.hatch]
 
 [tool.hatch.version]
-path = "src/pygrate/__about__.py"
+path = "src/automyte/__about__.py"
 
 [tool.hatch.envs.tests]
 dependencies = [
@@ -31,4 +34,4 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pygrate"]
+packages = ["src/automyte"]

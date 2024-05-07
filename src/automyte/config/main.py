@@ -16,7 +16,7 @@ def main(
 
 
 def console_main() -> int:
-    """The CLI entry point of pygrate.
+    """The CLI entry point of automyte.
 
     This function is not meant for programmable use; use `main()` instead.
     """
