@@ -10,8 +10,7 @@ class ExitCode(enum.IntEnum):
     MIGRATION_FAILED = 1
 
 
-def main(
-) -> ExitCode:
+def main() -> ExitCode:
     return ExitCode.OK
 
 
@@ -24,10 +23,11 @@ def console_main() -> int:
     try:
         code = main()
         sys.stdout.flush()
-        return code
     except BrokenPipeError:
         # Python flushes standard streams on exit; redirect remaining output
         # to devnull to avoid another BrokenPipeError at shutdown
         devnull = os.open(os.devnull, os.O_WRONLY)
         os.dup2(devnull, sys.stdout.fileno())
         return 1  # Python exits with error code 1 on EPIPE
+    else:
+        return code

@@ -1,5 +1,5 @@
-from .config import console_main
+from automyte.config import console_main
 
-
-def migrate():
-    console_main()
+__all__ = [
+    "console_main",
+]

@@ -14,7 +14,7 @@ authors = [
 ]
 
 [project.scripts]
-automyte = "automyte:migrate"
+automyte = "automyte:console_main"
 
 [tool]
 [tool.hatch]
