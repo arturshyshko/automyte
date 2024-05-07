@@ -22,12 +22,6 @@ automyte = "automyte:migrate"
 [tool.hatch.version]
 path = "src/automyte/__about__.py"
 
-[tool.hatch.envs.tests]
-dependencies = [
-  "pytest",
-  "ruff",
-]
-
 [tool.hatch.build.targets.sdist]
 exclude = [
   "/docs",
