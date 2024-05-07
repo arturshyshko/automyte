@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "automyte"
-description = ""
+description = "Tool for automation of code updates."
 dynamic = ["version"]
 requires-python = ">=3.10"
 readme = "README.md"
@@ -35,3 +35,16 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/automyte"]
+
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Automation Tools",
+  "License :: MIT License",
+
+  # Specify the Python versions you support here.
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
