@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2] 2025-02-06
+
+### Added
+- v0.0.2 Add project explorer util for interacting with all files in the project
+
+### Changed
+- v0.0.2 Only run previously failed test on test reruns to speed them up (19e04db)
+
 ## [0.0.1] 2023-05-07
 
 ### Added
@@ -16,5 +24,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - v0.0.1 Setup basic tools + gitignore (70f1259)
 
 ### Changed
-
 - v0.0.1 Rename package pygrate -> automyte (41e1966)
