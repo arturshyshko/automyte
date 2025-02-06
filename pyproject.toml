@@ -41,3 +41,5 @@ exclude = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/automyte"]
 
+[tool.pytest.ini_options]
+addopts = "-rfE --last-failed"
