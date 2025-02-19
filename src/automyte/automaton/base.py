@@ -4,7 +4,6 @@ import abc
 import contextlib
 import typing as t
 from dataclasses import dataclass
-from typing_extensions import Generator
 
 
 RUN_MODES = t.Literal['run', 'amend']
@@ -19,7 +18,7 @@ class File(abc.ABC):
     def name(self) -> str:
         raise NotImplementedError
 
-    def get(self) -> File:
+    def get(self) -> t.Self:
         raise NotImplementedError
 
     def flush(self) -> None:
@@ -49,11 +48,11 @@ class Config:
 
 # TODO: Need to implement __and__ __or__ stuff, to be able to combine filters
 class Filter:
-    def filter(self, files: list[File]) -> list[File]:
+    def filter(self, file: File) -> File | None:
         raise NotImplementedError
 
-    def __call__(self, files: list[File]) -> list[File]:
-        return self.filter(files=files)
+    def __call__(self, file: File) -> File | None:
+        return self.filter(file=file)
 
 
 # TODO: Maybe split it into FilesBackend + ProjectExplorer class, so then ProjectExplorer is responsible for filters, backend is for getting/saving files
@@ -178,6 +177,7 @@ class Automaton:
 
     def _update_history(self, project: Project, result: AutomatonRunResult):
         """TODO"""
+        return
 
 
 def wrap_task_result(value: t.Any) -> TaskReturn:
@@ -185,3 +185,93 @@ def wrap_task_result(value: t.Any) -> TaskReturn:
         return value
     else:
         return TaskReturn(instruction='continue', value=value)
+
+
+
+
+
+
+
+
+
+
+
+
+import os
+from pathlib import Path
+
+class OSFile(File):
+    def __init__(self, fullname: str):
+        self._initial_location = fullname
+        self._location = fullname
+
+        self._inital_contents: str | None = None
+        self._contents: str | None = None
+
+        self._marked_for_delete: bool = False
+
+    @property
+    def folder(self) -> str:
+        return str(Path(self._location).parent)
+
+    @property
+    def name(self) -> str:
+        return str(Path(self._location).name)
+
+    def read(self) -> t.Self:
+        with open(self._location, 'r') as physical_file:
+            self._inital_contents = physical_file.read()
+            self._contents = self._inital_contents
+
+        return self
+
+    def flush(self) -> None:
+        with open(self._location, 'w') as physical_file:
+            physical_file.write(self._contents or '')
+
+    def contains(self, text: str) -> bool:
+        return text in (self._contents or '')
+
+    def move(self, to: str | None = None, new_name: str | None = None) -> File:
+        self._location = str(Path(to or self.folder) / (new_name or self.name))
+        return self
+
+    def get_contents(self) -> str:
+        if self._contents is None:
+            self.read()
+
+        return self._contents or ''
+
+    def edit(self, text: str) -> File:
+        self._contents = text
+        return self
+
+    def delete(self) -> File:
+        self._marked_for_delete = True
+        return self
+
+
+class ContainsFilter(Filter):
+    def __init__(self, text: str | list[str]) -> None:
+        self.text = text if isinstance(text, list) else [text]
+        # TODO: Handle regexp case.
+
+    def filter(self, file: File) -> File | None:
+        if any(file.contains(occurance) for occurance in self.text):
+            return file
+
+
+class LocalFilesExplorer(ProjectExplorer):
+    def __init__(self, rootdir: str, filter_by: Filter):
+        self.rootdir = rootdir
+        self.filter_by = filter_by
+
+    def _all_files(self) -> t.Generator[File, None, None]:
+        for root, dirs, files in os.walk(self.rootdir):
+            for f in files:
+                yield OSFile(fullname=str(Path(root)/f))
+
+    def explore(self) -> t.Generator[File, None, None]:
+        for file in self._all_files():
+            if self.filter_by(file):
+                yield file
