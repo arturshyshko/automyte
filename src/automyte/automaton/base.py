@@ -87,7 +87,7 @@ class BaseTask:
 class TasksFlow:
     def __init__(
             self,
-            *args: list[BaseTask],
+            *args: list[t.Callable[[RunContext, File], t.Any]],
             preprocess: list[BaseTask] | None = None,
             postprocess: list[BaseTask] | None = None
         ):
@@ -156,8 +156,9 @@ class Automaton:
                 break
 
     def _get_target_projects(self) -> list[Project]:
+        # TODO: Why did I even create this method?
         """TODO"""
-        raise NotImplementedError
+        return self.projects
 
     def _execute_for_project(self, project: Project, ctx: RunContext) -> AutomatonRunResult:
         """TODO: CURRENT"""
@@ -169,6 +170,8 @@ class Automaton:
         for file in project.explorer.explore():
             for process_file_task in self.flow.tasks:
                 ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)))
+
+            file.flush()
 
         for post_task in self.flow.postprocess_tasks:
             ctx.save_task_result(wrap_task_result(post_task(ctx)))
@@ -250,6 +253,9 @@ class OSFile(File):
         self._marked_for_delete = True
         return self
 
+    def __str__(self):
+        return self._initial_location
+
 
 class ContainsFilter(Filter):
     def __init__(self, text: str | list[str]) -> None:
@@ -269,9 +275,37 @@ class LocalFilesExplorer(ProjectExplorer):
     def _all_files(self) -> t.Generator[File, None, None]:
         for root, dirs, files in os.walk(self.rootdir):
             for f in files:
-                yield OSFile(fullname=str(Path(root)/f))
+                yield OSFile(fullname=str(Path(root)/f)).read()
 
     def explore(self) -> t.Generator[File, None, None]:
         for file in self._all_files():
-            if self.filter_by(file):
+            if self.filter_by.filter(file):
                 yield file
+
+
+
+
+
+def lol(ctx: RunContext, file: File):
+    import re
+    file.edit(re.sub(r"world", "there", file.get_contents()))
+
+
+what = Automaton(
+    name='impl1',
+    config=Config(mode='run'),
+    projects=[
+        Project(
+            project_id='test_project',
+            explorer=LocalFilesExplorer(
+                rootdir='/Users/arturshyshko/projects/opensource/subject1',
+                filter_by=ContainsFilter(text='hello world')
+            ),
+        ),
+    ],
+    flow=TasksFlow([lol]),
+)
+
+
+if __name__ == '__main__':
+    what.run()
