@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+from ast import arguments
 import contextlib
 import typing as t
 from dataclasses import dataclass
@@ -92,10 +93,11 @@ class BaseTask:
         raise NotImplementedError
 
 
+
 class TasksFlow:
     def __init__(
             self,
-            *args: list[t.Callable[[RunContext, File], t.Any]],
+            *args: list[FileTask],
             preprocess: list[BaseTask] | None = None,
             postprocess: list[BaseTask] | None = None
         ):
@@ -109,6 +111,7 @@ class RunContext:
     config: Config
     project: Project
     current_status: AutomatonRunResult
+    previous_status: AutomatonRunResult
     previous_task: BaseTask | None = None
     next_task: BaseTask | None = None
     tasks_returns: list[TaskReturn] | None = None
@@ -128,7 +131,7 @@ class RunContext:
             self.tasks_returns.append(result)
         return result
 
-
+FileTask: t.TypeAlias = t.Callable[[RunContext, File], t.Any]
 RunStatus: t.TypeAlias = t.Literal['fail', 'success', 'skipped', 'running', 'new']
 
 @dataclass
@@ -145,22 +148,29 @@ class Automaton:
             flow: TasksFlow,
             config: Config | None = None,
             history: History | None = None,
-        ):
-            self.name = name
-            self.config: Config = config or Config.get_default()
-            self.projects = projects
-            self.flow = flow
-            self.history: History = history or InMemoryHistory()
+    ):
+        self.name = name
+        self.config: Config = config or Config.get_default()
+        self.projects = projects
+        self.flow = flow
+        self.history: History = history or InMemoryHistory()
 
     def run(self):
-
         for project in self._get_target_projects():
             result = AutomatonRunResult(status='running')
+            previous_result = self.history.get_status(project.project_id)
+
             try:
-                ctx = RunContext(config=self.config, project=project, current_status=result, tasks_returns=[])
+                ctx = RunContext(
+                    config=self.config, project=project,
+                    current_status=result, previous_status=previous_result,
+                    tasks_returns=[],
+                )
                 result = self._execute_for_project(project, ctx)
+
             except Exception as e:
                 result = AutomatonRunResult(status='fail', error=str(e))
+
             finally:
                 self._update_history(project, result)
 
@@ -323,6 +333,7 @@ class History(abc.ABC):
 
 from collections import defaultdict
 
+
 class InMemoryHistory(History):
     def __init__(self) -> None:
         self.data: dict[str, AutomatonRunResult] = defaultdict(lambda: AutomatonRunResult(status='new'))
@@ -335,3 +346,45 @@ class InMemoryHistory(History):
 
     def read(self):
         return self.data
+
+
+class ModeGuards:
+    run = lambda ctx: ctx.config.mode == 'run'
+    amend = lambda ctx: ctx.config.mode == 'amend'
+
+class HistoryGuards:
+    failed = lambda ctx: ctx.history.get_status(ctx.project.project_id).status == 'fail'
+    skipped = lambda ctx: ctx.history.get_status(ctx.project.project_id).status == 'skipped'
+    succeeded = lambda ctx: ctx.history.get_status(ctx.project.project_id).status == 'success'
+    new = lambda ctx: ctx.history.get_status(ctx.project.project_id).status == 'new'
+
+class PreviousTaskGuards:
+    is_success = lambda ctx: ctx.previous_return is None or ctx.previous_return.instruction == 'continue'
+    was_skipped = lambda ctx: ctx.previous_return is None or ctx.previous_return.instruction == 'skip'
+
+# TODO: Figure out a typing for passing any of the attrs of these classes.
+GuardsCollection: t.TypeAlias = ModeGuards | HistoryGuards | PreviousTaskGuards
+
+class Guards:
+    MODE = ModeGuards
+    HISTORY = HistoryGuards
+    PREVIOUS_TASK = PreviousTaskGuards
+
+
+class TaskGuard:
+    def __init__(self, *args: FileTask) -> None:
+        self.tasks = args
+
+    def __call__(self, ctx: RunContext, file: File):
+        if self.guard(ctx):
+            for task in self.tasks:
+                result = task(ctx, file)
+            else:
+                # TODO: Need to actually properly handle cases when tasks fail.
+                return locals().get('result', None)  # Just preventing linter from complaining
+        else:
+            # TODO: What should be done here?
+            ...
+
+    def guard(self, ctx: RunContext) -> bool:
+        raise NotImplementedError

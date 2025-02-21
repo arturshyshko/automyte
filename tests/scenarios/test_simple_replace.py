@@ -14,7 +14,7 @@ def test_replacing_text(tmp_local_project_factory):
 
     what = Automaton(
         name='impl1',
-        config=Config(mode='run'),
+        config=Config.get_default(),
         projects=[
             Project(
                 project_id='test_project',
