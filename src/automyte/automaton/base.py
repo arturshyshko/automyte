@@ -40,15 +40,18 @@ class File(abc.ABC):
         raise NotImplementedError
 
 
+_ProjectID: t.TypeAlias = str
+AutomatonTarget: t.TypeAlias = t.Literal['all', 'new', 'successful', 'failed', 'skipped'] | _ProjectID
+
 @dataclass
 class Config:
     mode: RUN_MODES
     stop_on_fail: bool = True
+    target: AutomatonTarget = 'all'
 
     @classmethod
-    def get_default(cls):
-        return cls(mode='run', stop_on_fail=True)
-
+    def get_default(cls, **kwargs):
+        return cls(mode='run', stop_on_fail=True, **kwargs)
 
 
 # TODO: Need to implement __and__ __or__ stuff, to be able to combine filters
@@ -165,8 +168,23 @@ class Automaton:
                 break
 
     def _get_target_projects(self) -> t.Generator[Project, None, None]:
-        # TODO: Need to process target_id and stuff from config.
-        for project in self.projects:
+        targets = {p.project_id: p for p in self.projects}
+        filter_by_status = lambda status: {  # Get projects from targets based on their status in history.
+            proj_id: targets[proj_id]
+            for proj_id, run in self.history.read().items()
+            if run.status == status
+        }
+
+        match self.config.target:
+            case 'all': pass
+            case 'new': targets = filter_by_status('new')
+            case 'failed': targets = filter_by_status('fail')
+            case 'successful': targets = filter_by_status('success')
+            case 'skipped': targets = filter_by_status('skipped')
+            case _:  # Passed target_id explicitly.
+                targets = {pid: proj for pid, proj in targets.items() if pid == self.config.target}
+
+        for project in targets.values():
             yield project
 
     def _execute_for_project(self, project: Project, ctx: RunContext) -> AutomatonRunResult:
@@ -298,6 +316,10 @@ class History(abc.ABC):
     def get_status(self, project_id: str) -> AutomatonRunResult:
         raise NotImplementedError
 
+    def read(self) -> dict[_ProjectID, AutomatonRunResult]:
+        """Return all project's history status"""
+        raise NotImplementedError
+
 
 from collections import defaultdict
 
@@ -310,3 +332,6 @@ class InMemoryHistory(History):
 
     def set_status(self, project_id: str, status: AutomatonRunResult):
         self.data[project_id] = status
+
+    def read(self):
+        return self.data
