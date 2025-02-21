@@ -48,6 +48,7 @@ coverage.xml
 .project
 .settings
 .vscode
+.zed
 __pycache__/
 .python-version
 

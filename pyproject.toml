@@ -33,6 +33,9 @@ automyte = "automyte:console_main"
 [tool.hatch.version]
 path = "src/automyte/__about__.py"
 
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.10", "3.11", "3.12"]
+
 [tool.hatch.build.targets.sdist]
 exclude = [
   "/docs",
@@ -43,3 +46,10 @@ packages = ["src/automyte"]
 
 [tool.pytest.ini_options]
 addopts = "-rfE --last-failed"
+
+[tool.hatch.envs.dev]
+template = "default"
+dependencies = [
+  "pytest",
+  "python-lsp-server[all]",
+]
