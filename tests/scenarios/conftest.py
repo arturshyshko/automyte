@@ -12,12 +12,17 @@ _ProjectStructure: t.TypeAlias = dict[_DirName | _FileName, t.Union[_FileContent
 
 @pytest.fixture
 def tmp_local_project_factory():
-    rootdir = TemporaryDirectory()
+    rootdirs = []
     try:
 
         def _create_tmp_project(structure: _ProjectStructure, dir: str | None = None):
-            if dir: os.mkdir(dir)
-            current_dir = dir or rootdir.name
+            if dir:  # Recursive call, just need to create child dirs.
+                os.mkdir(dir)
+                current_dir = dir
+            else:  # First call, need to create TMP dir as parent and add it to array for removal.
+                new_tmp_dir = TemporaryDirectory()
+                rootdirs.append(new_tmp_dir)
+                current_dir = new_tmp_dir.name
 
             for name, content in structure.items():
                 if isinstance(content, str):  # Encountered a file.
@@ -26,9 +31,10 @@ def tmp_local_project_factory():
                 else:  # Encoruntered a folder, so need to generate the whole structure again, recursively.
                     _create_tmp_project(structure=content, dir=f'{current_dir}/{name}')
 
-            return rootdir.name  # Returning rootdir for the project.
+            return current_dir
 
         yield _create_tmp_project
 
     finally:
-        rootdir.cleanup()
+        for dir in rootdirs:
+            dir.cleanup()

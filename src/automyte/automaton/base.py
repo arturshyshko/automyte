@@ -45,6 +45,11 @@ class Config:
     mode: RUN_MODES
     stop_on_fail: bool = True
 
+    @classmethod
+    def get_default(cls):
+        return cls(mode='run', stop_on_fail=True)
+
+
 
 # TODO: Need to implement __and__ __or__ stuff, to be able to combine filters
 class Filter:
@@ -121,9 +126,11 @@ class RunContext:
         return result
 
 
+RunStatus: t.TypeAlias = t.Literal['fail', 'success', 'skipped', 'running', 'new']
+
 @dataclass
 class AutomatonRunResult:
-    status: t.Literal['fail', 'success', 'skipped', 'running']
+    status: RunStatus
     error: str | None = None
 
 
@@ -131,19 +138,21 @@ class Automaton:
     def __init__(
             self,
             name: str,
-            config: Config,
             projects: list[Project],
             flow: TasksFlow,
+            config: Config | None = None,
+            history: History | None = None,
         ):
             self.name = name
-            self.config = config
+            self.config: Config = config or Config.get_default()
             self.projects = projects
             self.flow = flow
+            self.history: History = history or InMemoryHistory()
 
     def run(self):
-        result = AutomatonRunResult(status='running')
 
         for project in self._get_target_projects():
+            result = AutomatonRunResult(status='running')
             try:
                 ctx = RunContext(config=self.config, project=project, current_status=result, tasks_returns=[])
                 result = self._execute_for_project(project, ctx)
@@ -152,16 +161,15 @@ class Automaton:
             finally:
                 self._update_history(project, result)
 
-            if self.config.stop_on_fail:
+            if self.config.stop_on_fail and result.status == 'fail':
                 break
 
-    def _get_target_projects(self) -> list[Project]:
-        # TODO: Why did I even create this method?
-        """TODO"""
-        return self.projects
+    def _get_target_projects(self) -> t.Generator[Project, None, None]:
+        # TODO: Need to process target_id and stuff from config.
+        for project in self.projects:
+            yield project
 
     def _execute_for_project(self, project: Project, ctx: RunContext) -> AutomatonRunResult:
-        """TODO: CURRENT"""
         # TODO: Think about how to handle abort instruction nicely.
         # TODO: Think about on_task_fail='revert | pause' functionality.
         for preprocess_task in self.flow.preprocess_tasks:
@@ -179,8 +187,7 @@ class Automaton:
         return AutomatonRunResult(status='success')
 
     def _update_history(self, project: Project, result: AutomatonRunResult):
-        """TODO"""
-        return
+        self.history.set_status(project.project_id, result)
 
 
 def wrap_task_result(value: t.Any) -> TaskReturn:
@@ -202,6 +209,7 @@ def wrap_task_result(value: t.Any) -> TaskReturn:
 
 import os
 from pathlib import Path
+
 
 class OSFile(File):
     def __init__(self, fullname: str):
@@ -258,8 +266,8 @@ class OSFile(File):
 
 
 class ContainsFilter(Filter):
-    def __init__(self, text: str | list[str]) -> None:
-        self.text = text if isinstance(text, list) else [text]
+    def __init__(self, contains: str | list[str]) -> None:
+        self.text = contains if isinstance(contains, list) else [contains]
         # TODO: Handle regexp case.
 
     def filter(self, file: File) -> File | None:
@@ -283,29 +291,22 @@ class LocalFilesExplorer(ProjectExplorer):
                 yield file
 
 
+class History(abc.ABC):
+    def set_status(self, project_id: str, status: AutomatonRunResult):
+        raise NotImplementedError
+
+    def get_status(self, project_id: str) -> AutomatonRunResult:
+        raise NotImplementedError
 
 
+from collections import defaultdict
 
-def lol(ctx: RunContext, file: File):
-    import re
-    file.edit(re.sub(r"world", "there", file.get_contents()))
+class InMemoryHistory(History):
+    def __init__(self) -> None:
+        self.data: dict[str, AutomatonRunResult] = defaultdict(lambda: AutomatonRunResult(status='new'))
 
+    def get_status(self, project_id: str) -> AutomatonRunResult:
+        return self.data[project_id]
 
-what = Automaton(
-    name='impl1',
-    config=Config(mode='run'),
-    projects=[
-        Project(
-            project_id='test_project',
-            explorer=LocalFilesExplorer(
-                rootdir='/Users/arturshyshko/projects/opensource/subject1',
-                filter_by=ContainsFilter(text='hello world')
-            ),
-        ),
-    ],
-    flow=TasksFlow([lol]),
-)
-
-
-if __name__ == '__main__':
-    what.run()
+    def set_status(self, project_id: str, status: AutomatonRunResult):
+        self.data[project_id] = status

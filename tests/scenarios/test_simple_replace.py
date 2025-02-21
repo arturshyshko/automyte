@@ -20,7 +20,7 @@ def test_replacing_text(tmp_local_project_factory):
                 project_id='test_project',
                 explorer=LocalFilesExplorer(
                     rootdir=dir,
-                    filter_by=ContainsFilter(text='hello world')
+                    filter_by=ContainsFilter(contains='hello world')
                 ),
             ),
         ],
