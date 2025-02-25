@@ -12,7 +12,7 @@ def test_replacing_text(tmp_local_project_factory):
         },
     })
 
-    what = Automaton(
+    Automaton(
         name='impl1',
         config=Config.get_default(),
         projects=[
@@ -25,8 +25,7 @@ def test_replacing_text(tmp_local_project_factory):
             ),
         ],
         flow=TasksFlow([lol]),
-    )
+    ).run()
 
-    what.run()
     with open(f'{dir}/src/hello.txt', 'r') as f:
         assert f.read() == 'hello there!'
