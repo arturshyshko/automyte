@@ -83,13 +83,28 @@ class Config:
             **kwargs,
         )
 
+    def set_vcs(self, **kwargs):
+        self.vcs = VCSConfig.get_default(**kwargs)
+        return self
+
 
 SupportedVCS: t.TypeAlias = t.Literal['git']
 
 @dataclass
 class VCSConfig:
     default_vcs: SupportedVCS
+    main_branch: str = 'master'
+    work_branch: str | None = 'automate'
     dont_disrupt_prior_state: bool = True
+
+    @classmethod
+    def get_default(cls, **kwargs):
+        kwargs.setdefault("default_vcs", 'git')
+        kwargs.setdefault("main_branch", 'master')
+        kwargs.setdefault("work_branch", 'automate')
+        kwargs.setdefault("dont_disrupt_prior_state", True)
+
+        return cls(**kwargs)
 
 
 @dataclass
@@ -131,7 +146,11 @@ class Filter:
 # NOTE: Maybe split it into FilesBackend + ProjectExplorer class, so then ProjectExplorer is responsible for filters, backend is for getting/saving files
 class ProjectExplorer(abc.ABC):
     def get_rootdir(self) -> str:
-        """To be overriden by child classes to provide project/vcs with access to project's rootdir."""
+        """To be overriden by child classes to provide project/vcs with access to explorer's rootdir."""
+        raise NotImplementedError
+
+    def set_rootdir(self, newdir: str) -> str:
+        """To be overriden by child classes to allow project to adjust explorer dir during setup() phase."""
         raise NotImplementedError
 
     def explore(self) -> t.Generator[File, None, None]:
@@ -151,15 +170,30 @@ class Project:
         # TODO: Think about using LocalFilesExplorer and allowing setting rootdir which will be passed to explorers that support it?
         assert rootdir or explorer, "Need to supply at least one of: rootdir | explorer."
         self.project_id = project_id
-        self._rootdir = rootdir
-        self.explorer = explorer or LocalFilesExplorer(rootdir=self.rootdir)
+        self.explorer = explorer or LocalFilesExplorer(rootdir=rootdir)  # TODO: Fix linter??
+        self.rootdir = rootdir or self.explorer.get_rootdir()
         self.vcs = vcs or Git(rootdir=self.rootdir)
 
-    @property
-    def rootdir(self):
-        if self._rootdir:
-            return self._rootdir
-        return self.explorer.get_rootdir()
+    @contextlib.contextmanager
+    def in_working_state(self, config: Config):
+        """Hook for doing any initial project setup and cleanup after the work is done.
+
+        Real use case for now - adjusting rootdir to point to worktree one if dont_disrupt_prior_state = True for Git.
+        NOTE: probably do files final flushing calls and stuff in here after yield. (if thats the case- maybe rename this method or return finish_work() function in yield instead)
+        """
+        # Setup phase:
+        original_rootdir = self.rootdir
+        with self.vcs.preserve_state(config=config.vcs) as current_project_dir:
+            self.rootdir = str(current_project_dir)
+            self.explorer.set_rootdir(newdir=str(current_project_dir))
+
+            yield
+
+        # TODO: Think if I should just create some additional methods instead. (related to the note)
+        # self.apply()
+        # self.cleanup()
+        self.rootdir = original_rootdir
+        self.explorer.set_rootdir(newdir=self.rootdir)
 
 
 @dataclass
@@ -218,12 +252,13 @@ class VCS(abc.ABC):
 
     # Will be using worktrees for git. Think if need to return smth?
     @contextlib.contextmanager
-    def preserve_state(self):
+    def preserve_state(self, config: VCSConfig):
         raise NotImplementedError
 
     def run(self, subcommand):
         raise NotImplementedError
 
+import hashlib, uuid
 # TODO: Figure out authentication.
 # TODO: Setup proper implementations when splitting into files. (probably use builder pattern for commands, like lazygit)
 class Git(VCS):
@@ -235,25 +270,27 @@ class Git(VCS):
     ) -> None:
             self.preferred_workflow = preferred_workflow
             self.remote = remote
-            self.rootdir = rootdir
+            self.original_rootdir = rootdir
+            self.workdir = rootdir
 
     def switch(self, to: str) -> t.Self:
-        bash_execute(f"git -C {self.rootdir} switch -c {to} 2>/dev/null || git switch {to}")
+        bash_execute(f"git -C {self.workdir} switch -c {to} 2>/dev/null || git switch {to}")
         return self
 
     def add(self, path: str | Path | File | Filter) -> t.Self:
-        output = bash_execute(f"git -C {self.rootdir} add {path}")
+        output = bash_execute(f"git -C {self.workdir} add {path}")
         return self
 
     def commit(self, msg: str) -> t.Self:
-        bash_execute(f'git -C {self.rootdir} commit -m "{msg}"')
+        command = f'git -C {self.workdir} commit -m "{msg}"'
+        output = bash_execute(['git', '-C', f'{self.workdir}', 'commit', '-m', f'"{msg}"'])
         return self
 
     def pull(self, branch: str) -> t.Self:
         if self.preferred_workflow == 'rebase':
-            bash_execute(f'git -C {self.rootdir} pull --rebase {self.remote} {branch}')
+            bash_execute(f'git -C {self.workdir} pull --rebase {self.remote} {branch}')
         else:
-            bash_execute(f'git -C {self.rootdir} pull {self.remote} {branch}')
+            bash_execute(f'git -C {self.workdir} pull {self.remote} {branch}')
 
         return self
 
@@ -263,7 +300,7 @@ class Git(VCS):
         return self
 
     def push(self, to: str) -> t.Self:
-        bash_execute(f"git -C {self.rootdir} push --force-with-lease origin {to}")
+        bash_execute(f"git -C {self.workdir} push --force-with-lease origin {to}")
         return self
 
     # TODO: Think on how this should be implemented.
@@ -271,8 +308,28 @@ class Git(VCS):
         raise NotImplementedError
 
     def run(self, subcommand: str):
-        output = bash_execute(f'git -C {self.rootdir} {subcommand}')
+        output = bash_execute(f'git -C {self.workdir} {subcommand}')
         return output
+
+    @contextlib.contextmanager
+    def preserve_state(self, config: VCSConfig):
+        if config.dont_disrupt_prior_state:
+            # TODO: Maybe add a check if a work_branch already exists in run mode, then have to process this somehow, as worktree will not be created?
+            random_hash = f'auto_{hashlib.md5(uuid.uuid4().bytes).hexdigest()}'
+            relative_worktree_path = f"./{random_hash}"
+            output = bash_execute(f'git -C {self.original_rootdir} worktree add -b {config.work_branch} {relative_worktree_path}')
+
+            self.workdir = Path(self.original_rootdir) / relative_worktree_path
+            yield str(self.workdir)
+
+            bash_execute(f'git -C {self.original_rootdir} worktree remove -f {relative_worktree_path}')
+
+        else:
+            yield self.original_rootdir
+
+
+
+
 
 
 class Automaton:
@@ -286,9 +343,9 @@ class Automaton:
     ):
         self.name = name
         self.config: Config = config or Config.get_default()
+        self.history: History = history or InMemoryHistory()
         self.projects = projects
         self.flow = flow
-        self.history: History = history or InMemoryHistory()
 
     def run(self):
         for project in self._get_target_projects():
@@ -297,7 +354,6 @@ class Automaton:
 
             try:
                 ctx = RunContext(
-
                     config=self.config, vcs=project.vcs, project=project,
                     current_status=result, previous_status=previous_result,
                     tasks_returns=[],
@@ -334,20 +390,21 @@ class Automaton:
             yield project
 
     def _execute_for_project(self, project: Project, ctx: RunContext) -> AutomatonRunResult:
+        # TODO: Move most of this logic into TasksFlow class.
         # TODO: Think about how to handle abort instruction nicely.
         # TODO: Think about on_task_fail='revert | pause' functionality.
-        # TODO: Move most of this logic into TasksFlow class.
-        for preprocess_task in self.flow.preprocess_tasks:
-            ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)))
+        with project.in_working_state(ctx.config):
+            for preprocess_task in self.flow.preprocess_tasks:
+                ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)))
 
-        for file in project.explorer.explore():
-            for process_file_task in self.flow.tasks:
-                ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)))
+            for file in project.explorer.explore():
+                for process_file_task in self.flow.tasks:
+                    ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)))
 
-            file.flush()
+                file.flush()
 
-        for post_task in self.flow.postprocess_tasks:
-            ctx.save_task_result(wrap_task_result(post_task(ctx, None)))
+            for post_task in self.flow.postprocess_tasks:
+                ctx.save_task_result(wrap_task_result(post_task(ctx, None)))
 
         return AutomatonRunResult(status='success')
 
@@ -403,7 +460,7 @@ class OSFile(File):
 
     def flush(self) -> None:
         with open(self._location, 'w') as physical_file:
-            physical_file.write(self._contents or '')
+            physical_file.write(self.get_contents())
 
     def contains(self, text: str) -> bool:
         return text in (self._contents or '')
@@ -457,6 +514,10 @@ class LocalFilesExplorer(ProjectExplorer):
 
     def get_rootdir(self) -> str:
         return self.rootdir
+
+    def set_rootdir(self, newdir: str) -> str:
+        self.rootdir = newdir
+        return newdir
 
 class History(abc.ABC):
     def set_status(self, project_id: str, status: AutomatonRunResult):
@@ -537,3 +598,9 @@ class Conditional(TaskGuard):
 
     def guard(self, ctx: RunContext) -> bool:
         return self.validator(ctx)
+
+
+# TODO: Think of a better implementation?
+class Breakpoint:
+    def __call__(self, ctx: RunContext, file: File | None):
+        import pdb; pdb.set_trace()

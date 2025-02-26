@@ -12,7 +12,7 @@ def test_targetting_by_target_id(tmp_local_project_factory):
     history.set_status('proj2', AutomatonRunResult(status='new'))
     filters = ContainsFilter(contains='hello')
 
-    config = Config.get_default(target='proj1')
+    config = Config.get_default(target='proj1').set_vcs(dont_disrupt_prior_state=False)
 
     automaton = Automaton(
         name='hello',
@@ -44,7 +44,7 @@ def test_targetting_by_status(tmp_local_project_factory, initial_status, target_
     history.set_status('proj2', AutomatonRunResult(status='new'))
     filters = ContainsFilter(contains='hello')
 
-    config = Config.get_default(target=target_status)
+    config = Config.get_default(target=target_status).set_vcs(dont_disrupt_prior_state=False)
 
     automaton = Automaton(
         name='hello',

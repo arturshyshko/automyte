@@ -30,12 +30,42 @@ class vcs:
             ctx.vcs.run(self.cmd)
 
 
-def test_replacing_text(tmp_local_project_factory):
-    dir = tmp_local_project_factory(structure={
-        "src": {
-            "hello.txt": "hello world!",
-        },
-    })
+def test_files_added(tmp_local_project_factory):
+    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
+
+    Automaton(
+        name='impl1',
+        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        projects=[
+            Project(
+                project_id='test_project',
+                explorer=LocalFilesExplorer(
+                    rootdir=dir, filter_by=ContainsFilter(contains='hello world')
+                ),
+            ),
+        ],
+        flow=TasksFlow([
+            lol,
+        ],
+        preprocess=[
+            vcs.run('init')
+        ],
+        postprocess=[
+            vcs.add("src/"),
+            # vcs.commit("whaaaatt"),
+        ]),
+    ).run()
+
+    assert 'src/hello.txt' in bash_execute(f"git -C {dir} status")
+
+def test_worktree_setup(tmp_local_project_factory):
+    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
+
+    # Worktrees require at least 1 commit
+    bash_execute(f"git -C {dir} init")
+    bash_execute(f"git -C {dir} add .")
+    bash_execute(f"git -C {dir} commit -m 'hello'")
+
 
     Automaton(
         name='impl1',
@@ -53,11 +83,13 @@ def test_replacing_text(tmp_local_project_factory):
             # vcs.add()
         ],
         preprocess=[
-            vcs.run('init')
+            # vcs.run('init')
         ],
         postprocess=[
-            vcs.add("src/"),
+            vcs.add("."),
+            vcs.commit("testing worktree"),
+            # Breakpoint(),
         ]),
     ).run()
 
-    assert 'src/hello.txt' in bash_execute(f"git -C {dir} status")
+    assert 'src/hello.txt' in bash_execute(f"git -C {dir} diff master..automate")
