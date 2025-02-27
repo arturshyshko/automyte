@@ -114,24 +114,36 @@ class RunContext:
     project: Project
     current_status: AutomatonRunResult
     previous_status: AutomatonRunResult
+    global_tasks_returns: list[TaskReturn]
+    file_tasks_returns: list[TaskReturn]
     previous_task: BaseTask | None = None
     next_task: BaseTask | None = None
-    tasks_returns: list[TaskReturn] | None = None
     current_file: File | None = None  # None for pre/post process tasks.
 
     @property
     def previous_return(self):
-        if self.tasks_returns:
-            with contextlib.suppress(IndexError):
-                return self.tasks_returns[-1]
-        return None
+        """Return previously saved task execution result.
 
-    def save_task_result(self, result: TaskReturn):
-        if self.tasks_returns is None:
-            self.tasks_returns = [result]
+        pre/post process tasks returns are saved indefinitely inside automaton run
+            main tasks section returns get cleaned up between each file.
+        """
+        with contextlib.suppress(IndexError):
+            if self.file_tasks_returns:
+                return self.file_tasks_returns[-1]
+            elif self.global_tasks_returns:
+                return self.global_tasks_returns[-1]
+
+        return TaskReturn(instruction='continue', value=None)
+
+    def save_task_result(self, result: TaskReturn, file: File | None):
+        if file is None:
+            self.global_tasks_returns.append(result)
         else:
-            self.tasks_returns.append(result)
+            self.file_tasks_returns.append(result)
         return result
+
+    def cleanup_file_returns(self):
+        self.file_tasks_returns.clear()
 
 
 # TODO: Need to implement __and__ __or__ stuff, to be able to combine filters
@@ -356,7 +368,7 @@ class Automaton:
                 ctx = RunContext(
                     config=self.config, vcs=project.vcs, project=project,
                     current_status=result, previous_status=previous_result,
-                    tasks_returns=[],
+                    global_tasks_returns=[], file_tasks_returns=[]
                 )
                 result = self._execute_for_project(project, ctx)
 
@@ -395,16 +407,17 @@ class Automaton:
         # TODO: Think about on_task_fail='revert | pause' functionality.
         with project.in_working_state(ctx.config):
             for preprocess_task in self.flow.preprocess_tasks:
-                ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)))
+                ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)), file=None)
 
             for file in project.explorer.explore():
                 for process_file_task in self.flow.tasks:
-                    ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)))
+                    ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)), file=file)
 
                 file.flush()
+                ctx.cleanup_file_returns()
 
             for post_task in self.flow.postprocess_tasks:
-                ctx.save_task_result(wrap_task_result(post_task(ctx, None)))
+                ctx.save_task_result(wrap_task_result(post_task(ctx, None)), file=None)
 
         return AutomatonRunResult(status='success')
 
