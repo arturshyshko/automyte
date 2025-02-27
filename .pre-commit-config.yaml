@@ -1,0 +1,11 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.7
+    hooks:
+      - id: ruff
+      - id: ruff-format
+
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1 # Use the latest stable version
+    hooks:
+      - id: isort
