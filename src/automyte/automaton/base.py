@@ -120,16 +120,17 @@ class RunContext:
     previous_status: AutomatonRunResult
     global_tasks_returns: list[TaskReturn]
     file_tasks_returns: list[TaskReturn]
-    previous_task: BaseTask | None = None
-    next_task: BaseTask | None = None
-    current_file: File | None = None  # None for pre/post process tasks.
+    # NOTE: These fields are not used for now, so not gonna bother implementing them for now.
+    # previous_task: BaseTask | None = None
+    # next_task: BaseTask | None = None
+    # current_file: File | None = None  # None for pre/post process tasks.
 
     @property
     def previous_return(self):
         """Return previously saved task execution result.
 
         pre/post process tasks returns are saved indefinitely inside automaton run
-            main tasks section returns get cleaned up between each file.
+        main tasks section returns get cleaned up between each file.
         """
         with contextlib.suppress(IndexError):
             if self.file_tasks_returns:
@@ -186,8 +187,6 @@ class Project:
             explorer: ProjectExplorer | None = None,
             vcs: VCS | None = None
     ):
-        # TODO: Assign default values for explorer, vcs
-        # TODO: Think about using LocalFilesExplorer and allowing setting rootdir which will be passed to explorers that support it?
         assert rootdir or explorer, "Need to supply at least one of: rootdir | explorer."
         self.project_id = project_id
         self.explorer = explorer or LocalFilesExplorer(rootdir=rootdir)  # TODO: Fix linter??
@@ -199,7 +198,6 @@ class Project:
         """Hook for doing any initial project setup and cleanup after the work is done.
 
         Real use case for now - adjusting rootdir to point to worktree one if dont_disrupt_prior_state = True for Git.
-        NOTE: probably do files final flushing calls and stuff in here after yield. (if thats the case- maybe rename this method or return finish_work() function in yield instead)
         """
         # Setup phase:
         original_rootdir = self.rootdir
@@ -209,9 +207,6 @@ class Project:
 
             yield
 
-        # TODO: Think if I should just create some additional methods instead. (related to the note)
-        # self.apply()
-        # self.cleanup()
         self.rootdir = original_rootdir
         self.explorer.set_rootdir(newdir=self.rootdir)
 
@@ -219,15 +214,18 @@ class Project:
         self.explorer.flush()
 
 
+InstructionForAutomaton: t.TypeAlias = t.Literal['abort', 'skip', 'continue']
 
 @dataclass
 class TaskReturn:
-    instruction: t.Literal['abort', 'skip', 'continue']
-    value: t.Any
+    value: t.Any = None
+    instruction: InstructionForAutomaton = 'continue'
+    status: t.Literal['processed', 'skipped', 'errored'] = 'processed'
 
 
 BaseTask: t.TypeAlias = t.Callable[[RunContext, File | None], TaskReturn | t.Any]
 FileTask: t.TypeAlias = t.Callable[[RunContext, File], TaskReturn | t.Any]
+
 
 class TasksFlow:
     def __init__(
@@ -242,20 +240,58 @@ class TasksFlow:
 
     def execute(self, project: Project, ctx: RunContext):
         for preprocess_task in self.preprocess_tasks:
-            ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)), file=None)
+            instruction = self._handle_task_call(ctx=ctx, task=preprocess_task, file=None)
+
+            if instruction == 'skip':
+                return AutomatonRunResult(status='skipped')
+            elif instruction == 'abort':
+                return AutomatonRunResult(status='fail', error=str(ctx.previous_return.value))
 
         for file in project.explorer.explore():
             for process_file_task in self.tasks:
-                ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)), file=file)
+                instruction = self._handle_task_call(ctx=ctx, task=process_file_task, file=file)
+
+                if instruction == 'skip':
+                    return AutomatonRunResult(status='skipped')
+                elif instruction == 'abort':
+                    return AutomatonRunResult(status='fail', error=str(ctx.previous_return.value))
 
             ctx.cleanup_file_returns()
 
-        # This has to be called prior to postprocess tasks, as otherwise - files will not have been changed
-        # before all the vcs calls.
+        # Has to be called prior to postprocess tasks, otherwise files changes are not reflected on disk before vcs calls.
         project.apply_changes()
 
         for post_task in self.postprocess_tasks:
-            ctx.save_task_result(wrap_task_result(post_task(ctx, None)), file=None)
+            instruction = self._handle_task_call(ctx=ctx, task=post_task, file=None)
+
+            if instruction == 'skip':
+                return AutomatonRunResult(status='skipped')
+            elif instruction == 'abort':
+                return AutomatonRunResult(status='fail', error=str(ctx.previous_return.value))
+
+        return AutomatonRunResult(status='success')
+
+    def _handle_task_call(self, ctx: RunContext, task: BaseTask, file: File | None) -> InstructionForAutomaton:
+        """ Convenience wrapper for calling and handling all tasks.
+
+        Wraps plain python values into TaskReturns,
+            so that user doesn't have to do it unless they want to specify behaviour;
+        Save task return into ctx;
+        Return instruction for automaton on what to do next (like skip the project, continue or abort right away).
+
+        If the task raised an Exception - save it's value into task return with "errored" status and instruct to abort.
+        """
+        try:
+
+            task_result = wrap_task_result(task(ctx, file))
+
+        except Exception as e:
+            ctx.save_task_result(result=TaskReturn(instruction='abort', value=str(e), status='errored'), file=file)
+            return 'abort'
+
+        else:
+            ctx.save_task_result(result=task_result, file=file)
+            return task_result.instruction
 
 RunStatus: t.TypeAlias = t.Literal['fail', 'success', 'skipped', 'running', 'new']
 
@@ -431,17 +467,16 @@ class Automaton:
             yield project
 
     def _execute_for_project(self, project: Project, ctx: RunContext) -> AutomatonRunResult:
-        # TODO: Think about how to handle abort instruction nicely.
-        # TODO: Think about on_task_fail='revert | pause' functionality.
         with project.in_working_state(ctx.config):
-            self.flow.execute(project=project, ctx=ctx)
+            result = self.flow.execute(project=project, ctx=ctx)
 
-        return AutomatonRunResult(status='success')
+        return result
 
     def _update_history(self, project: Project, result: AutomatonRunResult):
         self.history.set_status(project.project_id, result)
 
 
+# NOTE: This should probably be top-level function in TasksFlow module?
 def wrap_task_result(value: t.Any) -> TaskReturn:
     if isinstance(value, TaskReturn):
         return value
@@ -605,8 +640,8 @@ class HistoryGuards:
     new = lambda ctx: ctx.history.get_status(ctx.project.project_id).status == 'new'
 
 class PreviousTaskGuards:
-    is_success = lambda ctx: ctx.previous_return is None or ctx.previous_return.instruction == 'continue'
-    was_skipped = lambda ctx: ctx.previous_return is None or ctx.previous_return.instruction == 'skip'
+    is_success = lambda ctx: ctx.previous_return is None or ctx.previous_return.status == 'processed'
+    was_skipped = lambda ctx: ctx.previous_return is None or not ctx.previous_return.status == 'skipped'
 
 # TODO: Figure out a typing for passing any of the attrs of these classes.
 # TODO: This will just be in a module called "guards", so I don't actually need Guards class.
