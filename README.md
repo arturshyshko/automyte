@@ -4,7 +4,6 @@ Here's a list of things I need to remember to implement or think about:
 
 ### Common
 
-1. Write a proper bash execute function, which will handle/report errors and properly process string cmd
 1. Implement logging config + add and setup log messages everywhere.
 1. Implement handling of random stuff (like if target_id is not present in projects)
 1. add validation in automaton, to make sure all the props/tasks are correct and can be used together

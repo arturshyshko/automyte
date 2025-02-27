@@ -71,16 +71,16 @@ def test_files_added(tmp_local_project_factory):
         ),
     ).run()
 
-    assert "src/hello.txt" in bash.execute(f"git -C {dir} status")
+    assert "src/hello.txt" in bash.execute(["git", "-C", dir, "status"]).output
 
 
 def test_worktree_setup(tmp_local_project_factory):
     dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
 
     # Worktrees require at least 1 commit
-    bash.execute(f"git -C {dir} init")
-    bash.execute(f"git -C {dir} add .")
-    bash.execute(f"git -C {dir} commit -m 'hello'")
+    bash.execute(["git", "-C", dir, "init"])
+    bash.execute(["git", "-C", dir, "add", "."])
+    bash.execute(["git", "-C", dir, "commit", "-m", "hello"])
 
     Automaton(
         name="impl1",
@@ -107,4 +107,4 @@ def test_worktree_setup(tmp_local_project_factory):
         ),
     ).run()
 
-    assert "src/hello.txt" in bash.execute(f"git -C {dir} diff master..automate")
+    assert "src/hello.txt" in bash.execute(["git", "-C", dir, "diff", "master..automate"]).output

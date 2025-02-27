@@ -30,11 +30,12 @@ class Git(VCS):
         self.workdir = rootdir
 
     def switch(self, to: str) -> "Git":
-        bash.execute(f"git -C {self.workdir} switch -c {to} 2>/dev/null || git switch {to}")
+        # TODO: Handle the case for when the branch already exists.
+        bash.execute(["git", "-C", f"{self.workdir}", "switch", "-c", "{to}", "2>/dev/null"])
         return self
 
     def add(self, path: str | Path | File | Filter) -> "Git":
-        bash.execute(f"git -C {self.workdir} add {path}")
+        bash.execute(["git", "-C", f"{self.workdir}", "add", f"{path}"])
         return self
 
     def commit(self, msg: str) -> "Git":
@@ -43,9 +44,9 @@ class Git(VCS):
 
     def pull(self, branch: str) -> "Git":
         if self.preferred_workflow == "rebase":
-            bash.execute(f"git -C {self.workdir} pull --rebase {self.remote} {branch}")
+            bash.execute(["git", "-C", f"{self.workdir}", "pull", "--rebase", f"{self.remote}", f"{branch}"])
         else:
-            bash.execute(f"git -C {self.workdir} pull {self.remote} {branch}")
+            bash.execute(["git", f"-C{self.workdir}", "pull", f"{self.remote}", f"{branch}"])
 
         return self
 
@@ -55,7 +56,7 @@ class Git(VCS):
         return self
 
     def push(self, to: str) -> "Git":
-        bash.execute(f"git -C {self.workdir} push --force-with-lease origin {to}")
+        bash.execute(["git", "-C", f"{self.workdir}", "push", "--force-with-lease", "origin", f"{to}"])
         return self
 
     # TODO: Think on how this should be implemented.
@@ -63,7 +64,7 @@ class Git(VCS):
         raise NotImplementedError
 
     def run(self, subcommand: str):
-        return bash.execute(f"git -C {self.workdir} {subcommand}")
+        return bash.execute(["git", "-C", f"{self.workdir}", subcommand])
 
     @contextlib.contextmanager
     def preserve_state(self, config: VCSConfig):
@@ -71,13 +72,22 @@ class Git(VCS):
             # TODO: Maybe add a check if a work_branch already exists in run mode, then have to process this somehow, as worktree will not be created?
             relative_worktree_path = f"./auto_{random_hash()}"
             bash.execute(
-                f"git -C {self.original_rootdir} worktree add -b {config.work_branch} {relative_worktree_path}"
+                [
+                    "git",
+                    "-C",
+                    self.original_rootdir,
+                    "worktree",
+                    "add",
+                    "-b",
+                    f"{config.work_branch}",
+                    relative_worktree_path,
+                ]
             )
 
             self.workdir = Path(self.original_rootdir) / relative_worktree_path
             yield str(self.workdir)
 
-            bash.execute(f"git -C {self.original_rootdir} worktree remove -f {relative_worktree_path}")
+            bash.execute(["git", "-C", self.original_rootdir, "worktree", "remove", "-f", relative_worktree_path])
 
         else:
             yield self.original_rootdir
