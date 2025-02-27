@@ -59,6 +59,10 @@ class File(abc.ABC):
     def delete(self) -> File:
         raise NotImplementedError
 
+    @property
+    def is_tainted(self) -> bool:
+        raise NotImplementedError
+
 
 _ProjectID: t.TypeAlias = str
 AutomatonTarget: t.TypeAlias = t.Literal['all', 'new', 'successful', 'failed', 'skipped'] | _ProjectID
@@ -169,6 +173,10 @@ class ProjectExplorer(abc.ABC):
         """To be inherited from and override accessing/saving project's files logic"""
         raise NotImplementedError
 
+    def flush(self):
+        """Centralised hook to actually apply all necessary changes for all files that require it."""
+        raise NotImplementedError
+
 
 class Project:
     def __init__(
@@ -207,6 +215,10 @@ class Project:
         self.rootdir = original_rootdir
         self.explorer.set_rootdir(newdir=self.rootdir)
 
+    def apply_changes(self):
+        self.explorer.flush()
+
+
 
 @dataclass
 class TaskReturn:
@@ -227,6 +239,23 @@ class TasksFlow:
         self.preprocess_tasks = preprocess or []
         self.postprocess_tasks = postprocess or []
         self.tasks = list(*args)
+
+    def execute(self, project: Project, ctx: RunContext):
+        for preprocess_task in self.preprocess_tasks:
+            ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)), file=None)
+
+        for file in project.explorer.explore():
+            for process_file_task in self.tasks:
+                ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)), file=file)
+
+            ctx.cleanup_file_returns()
+
+        # This has to be called prior to postprocess tasks, as otherwise - files will not have been changed
+        # before all the vcs calls.
+        project.apply_changes()
+
+        for post_task in self.postprocess_tasks:
+            ctx.save_task_result(wrap_task_result(post_task(ctx, None)), file=None)
 
 RunStatus: t.TypeAlias = t.Literal['fail', 'success', 'skipped', 'running', 'new']
 
@@ -402,22 +431,10 @@ class Automaton:
             yield project
 
     def _execute_for_project(self, project: Project, ctx: RunContext) -> AutomatonRunResult:
-        # TODO: Move most of this logic into TasksFlow class.
         # TODO: Think about how to handle abort instruction nicely.
         # TODO: Think about on_task_fail='revert | pause' functionality.
         with project.in_working_state(ctx.config):
-            for preprocess_task in self.flow.preprocess_tasks:
-                ctx.save_task_result(wrap_task_result(preprocess_task(ctx, None)), file=None)
-
-            for file in project.explorer.explore():
-                for process_file_task in self.flow.tasks:
-                    ctx.save_task_result(wrap_task_result(process_file_task(ctx, file)), file=file)
-
-                file.flush()
-                ctx.cleanup_file_returns()
-
-            for post_task in self.flow.postprocess_tasks:
-                ctx.save_task_result(wrap_task_result(post_task(ctx, None)), file=None)
+            self.flow.execute(project=project, ctx=ctx)
 
         return AutomatonRunResult(status='success')
 
@@ -455,6 +472,7 @@ class OSFile(File):
         self._contents: str | None = None
 
         self._marked_for_delete: bool = False
+        self.tainted: bool = False
 
     @property
     def folder(self) -> str:
@@ -480,6 +498,7 @@ class OSFile(File):
 
     def move(self, to: str | None = None, new_name: str | None = None) -> File:
         self._location = str(Path(to or self.folder) / (new_name or self.name))
+        self.tainted = True
         return self
 
     def get_contents(self) -> str:
@@ -490,11 +509,17 @@ class OSFile(File):
 
     def edit(self, text: str) -> File:
         self._contents = text
+        self.tainted = True
         return self
 
     def delete(self) -> File:
         self._marked_for_delete = True
+        self.tainted = True
         return self
+
+    @property
+    def is_tainted(self) -> bool:
+        return self.tainted
 
     def __str__(self):
         return self._initial_location
@@ -514,6 +539,7 @@ class LocalFilesExplorer(ProjectExplorer):
     def __init__(self, rootdir: str, filter_by: Filter | None = None):
         self.rootdir = rootdir
         self.filter_by = filter_by
+        self._changed_files: list[File] = []
 
     def _all_files(self) -> t.Generator[File, None, None]:
         for root, dirs, files in os.walk(self.rootdir):
@@ -525,12 +551,19 @@ class LocalFilesExplorer(ProjectExplorer):
             if not self.filter_by or self.filter_by.filter(file):  # Don't filter at all if no filters supplied.
                 yield file
 
+                if file.is_tainted:
+                    self._changed_files.append(file)
+
     def get_rootdir(self) -> str:
         return self.rootdir
 
     def set_rootdir(self, newdir: str) -> str:
         self.rootdir = newdir
         return newdir
+
+    def flush(self):
+        for file in self._changed_files:
+            file.flush()
 
 class History(abc.ABC):
     def set_status(self, project_id: str, status: AutomatonRunResult):
