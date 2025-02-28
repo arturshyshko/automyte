@@ -52,7 +52,7 @@ def test_skip_works_immediately_and_updates_history(tmp_local_project_factory):
     with open(f"{dir}/src/hello.txt", "r") as f:
         assert f.read() == "hello world!"  # Make sure it's unchanged.
 
-    assert history.get_status("test_project") == AutomatonRunResult(status="skipped")
+    assert history.get_status("impl1", "test_project") == AutomatonRunResult(status="skipped")
 
 
 def test_abort_works_immediately_and_updates_history(tmp_local_project_factory):
@@ -75,7 +75,7 @@ def test_abort_works_immediately_and_updates_history(tmp_local_project_factory):
     with open(f"{dir}/src/hello.txt", "r") as f:
         assert f.read() == "hello world!"  # Make sure it's unchanged.
 
-    assert history.get_status("test_project") == AutomatonRunResult(status="fail", error="smth is wrong")
+    assert history.get_status("impl1", "test_project") == AutomatonRunResult(status="fail", error="smth is wrong")
 
 
 def test_task_exception_abort_run(tmp_local_project_factory):
@@ -98,4 +98,4 @@ def test_task_exception_abort_run(tmp_local_project_factory):
     with open(f"{dir}/src/hello.txt", "r") as f:
         assert f.read() == "hello world!"  # Make sure it's unchanged.
 
-    assert history.get_status("test_project") == AutomatonRunResult(status="fail", error="oops")
+    assert history.get_status("impl1", "test_project") == AutomatonRunResult(status="fail", error="oops")

@@ -29,7 +29,6 @@ Here's a list of things I need to remember to implement or think about:
 
 ## History
 
-1. Implement splitting history per automaton
 1. Think about having history per task?
 1. Implement CLI for managing history
 

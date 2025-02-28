@@ -13,6 +13,7 @@ from .types import TaskReturn
 
 @dataclass
 class RunContext:
+    automaton_name: str
     config: Config
     vcs: VCS
     project: Project

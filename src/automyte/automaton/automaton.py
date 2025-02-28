@@ -26,10 +26,11 @@ class Automaton:
     def run(self):
         for project in self._get_target_projects():
             result = AutomatonRunResult(status="running")
-            previous_result = self.history.get_status(project.project_id)
+            previous_result = self.history.get_status(self.name, project.project_id)
 
             try:
                 ctx = RunContext(
+                    automaton_name=self.name,
                     config=self.config,
                     vcs=project.vcs,
                     project=project,
@@ -52,7 +53,7 @@ class Automaton:
     def _get_target_projects(self) -> t.Generator[Project, None, None]:
         targets = {p.project_id: p for p in self.projects}
         filter_by_status = lambda status: {  # Get projects from targets based on their status in history.
-            proj_id: targets[proj_id] for proj_id, run in self.history.read().items() if run.status == status
+            proj_id: targets[proj_id] for proj_id, run in self.history.read(self.name).items() if run.status == status
         }
 
         match self.config.target:
@@ -79,4 +80,4 @@ class Automaton:
         return result
 
     def _update_history(self, project: Project, result: AutomatonRunResult):
-        self.history.set_status(project.project_id, result)
+        self.history.set_status(automaton_name=self.name, project_id=project.project_id, status=result)

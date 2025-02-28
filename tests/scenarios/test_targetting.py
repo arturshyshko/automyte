@@ -21,8 +21,8 @@ def test_targetting_by_target_id(tmp_local_project_factory):
     rootdir2 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
 
     history = InMemoryHistory()
-    history.set_status("proj1", AutomatonRunResult(status="fail"))
-    history.set_status("proj2", AutomatonRunResult(status="new"))
+    history.set_status("hello", "proj1", AutomatonRunResult(status="fail"))
+    history.set_status("hello", "proj2", AutomatonRunResult(status="new"))
     filters = ContainsFilter(contains="hello")
 
     config = Config.get_default(target="proj1").set_vcs(dont_disrupt_prior_state=False)
@@ -40,8 +40,9 @@ def test_targetting_by_target_id(tmp_local_project_factory):
 
     automaton.run()
 
-    assert history.get_status("proj1") == AutomatonRunResult(status="success")  # Ran for proj1 due to target_id
-    assert history.get_status("proj2") == AutomatonRunResult(status="new")  # Never ran for proj2
+    # Ran for proj1 due to target_id
+    assert history.get_status("hello", "proj1") == AutomatonRunResult(status="success")
+    assert history.get_status("hello", "proj2") == AutomatonRunResult(status="new")  # Never ran for proj2
 
 
 @pytest.mark.parametrize(
@@ -56,8 +57,8 @@ def test_targetting_by_status(tmp_local_project_factory, initial_status, target_
     rootdir2 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
 
     history = InMemoryHistory()
-    history.set_status("proj1", AutomatonRunResult(status=initial_status))
-    history.set_status("proj2", AutomatonRunResult(status="new"))
+    history.set_status("hello", "proj1", AutomatonRunResult(status=initial_status))
+    history.set_status("hello", "proj2", AutomatonRunResult(status="new"))
     filters = ContainsFilter(contains="hello")
 
     config = Config.get_default(target=target_status).set_vcs(dont_disrupt_prior_state=False)
@@ -75,5 +76,6 @@ def test_targetting_by_status(tmp_local_project_factory, initial_status, target_
 
     automaton.run()
 
-    assert history.get_status("proj1") == AutomatonRunResult(status="success")  # Ran for proj1 due to target='failed'
-    assert history.get_status("proj2") == AutomatonRunResult(status="new")  # Never ran for proj2
+    # Ran for proj1 due to target='failed'
+    assert history.get_status("hello", "proj1") == AutomatonRunResult(status="success")
+    assert history.get_status("hello", "proj2") == AutomatonRunResult(status="new")  # Never ran for proj2
