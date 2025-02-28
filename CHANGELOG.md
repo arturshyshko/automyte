@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] 2025-02-28
+
+### Added
+
+- v1.1.0 Add basic readme + move updates plans to a separate file
+
+### Changed
+
+- v1.1.0 Update bash.execute util to return obj with output & status fields and capture stderr as well (3974b80)
+
+## [1.0.0] 2025-02-28
+
+### Added
+
+- v1.0.0 Add a list of tasks, notes for the lib development (3503961)
+- v1.0.0 Split prototype into proper folders structure (44fe56b)
+- v1.0.0 Setup pure library prototype in one file with all core functionality (8fe89ab)
+
+### Changed
+
+- v0.0.1 Remove previous implementations of ProjectExplorer and OSFile classes (44fe56b)
+
 ## [0.0.2] 2025-02-06
 
 ### Added
