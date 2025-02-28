@@ -12,8 +12,6 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Project,ProjectExplorer,Files,Filters
 
-1. Think about contains filter with regexp? Current file interface doesn't support contains with regexp.
-
 ## Config
 
 1. Think about adding builder setup for Config class

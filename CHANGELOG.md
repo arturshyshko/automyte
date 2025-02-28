@@ -7,17 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2] 2025-02-28
+## [0.1.3] 2025-02-28
 
 ### Added
 
-- v0.1.2 Fix OSFile implementation to properly process all operations
+- v0.1.3 Update ContainsFilter to support regexp
+- v0.1.3 Update Filter base class to handle logical (& | ~) operations (81d07c0)
+
+## [0.1.2] 2025-02-28
+
+### Changed
+
+- v0.1.2 Fix OSFile implementation to properly process all operations (cfc7842)
 
 ## [0.1.1] 2025-02-28
 
 ### Added
 
-- v0.1.1 Add basic readme + move updates plans to a separate file
+- v0.1.1 Add basic readme + move updates plans to a separate file (a2076de)
 
 ### Changed
 
