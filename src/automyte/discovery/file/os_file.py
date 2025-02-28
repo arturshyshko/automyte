@@ -26,19 +26,39 @@ class OSFile(File):
     def name(self) -> str:
         return str(Path(self._location).name)
 
+    @property
+    def fullpath(self) -> Path:
+        return Path(self._location)
+
     def read(self) -> "OSFile":
-        with open(self._location, "r") as physical_file:
+        # If the file was moved before initial read - we need to read from initial location.
+        current_location = self._location if self.fullpath.exists() else self._initial_location
+
+        with open(current_location, "r") as physical_file:
             self._inital_contents = physical_file.read()
             self._contents = self._inital_contents
 
         return self
 
     def flush(self) -> None:
+        if not self.tainted:
+            return
+
+        if self._marked_for_delete:
+            if self.fullpath.exists():
+                self.fullpath.unlink()
+            return
+
+        # If file has been moved - self._location will have been changed, so we write to new location.
         with open(self._location, "w") as physical_file:
             physical_file.write(self.get_contents())
 
+        # Cleanup old file after move() call.
+        if self._initial_location != self._location:
+            Path(self._initial_location).unlink()
+
     def contains(self, text: str) -> bool:
-        return text in (self._contents or "")
+        return text in self.get_contents()
 
     def move(self, to: str | None = None, new_name: str | None = None) -> File:
         self._location = str(Path(to or self.folder) / (new_name or self.name))
@@ -66,4 +86,4 @@ class OSFile(File):
         return self.tainted
 
     def __str__(self):
-        return self._initial_location
+        return self._location
