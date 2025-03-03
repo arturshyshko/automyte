@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] 2025-03-03
+
+### Added
+
+- v.0.1.4 Add InFileHistory implementation
+
+### Changed
+
+- v0.1.4 Update history interface to support per-automaton history (84a3b36)
+
 ## [0.1.3] 2025-02-28
 
 ### Added
 
-- v0.1.3 Update ContainsFilter to support regexp
-- v0.1.3 Update Filter base class to handle logical (& | ~) operations (81d07c0)
+- v0.1.3 Update ContainsFilter to support regexp (c95caa4)
+- v0.1.3 Update Filter base class to handle logical (& | ~) operations (61f38a9)
 
 ## [0.1.2] 2025-02-28
 

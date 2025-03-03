@@ -12,6 +12,8 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Project,ProjectExplorer,Files,Filters
 
+1. Add create() function in File interface + implement in OSFile
+
 ## Config
 
 1. Think about adding builder setup for Config class
@@ -34,6 +36,7 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Guards
 
+1. Move guards and breakpoint and other basic tasks to tasks folder. Use contrib only for extension like libcst
 1. Think again about guards implementation, not exatly the fan of a base class
 1. Think about typing for guards
 1. Add ActOn task guard which accepts filters to filter files further? Like:

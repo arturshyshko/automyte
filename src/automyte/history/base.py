@@ -11,5 +11,8 @@ class History(abc.ABC):
         raise NotImplementedError
 
     def read(self, automaton_name: str) -> dict[ProjectID, AutomatonRunResult]:
-        """Return all project's history status"""
+        """Return all project's history status
+
+        If <automaton_name> automaton has never ran for a project - return status as "new".
+        """
         raise NotImplementedError
