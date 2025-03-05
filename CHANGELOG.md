@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] 2025-03-05
+
+### Added
+
+- v0.1.5 Add logs to bash.execute util
+- v0.1.5 Add util vcs tasks for performing vcs cli commands from automaton (58d7208)
+
+### Changed
+
+- v0.1.5 Rewire VCS interface and update Git implementation (96b246b)
+
 ## [0.1.4] 2025-03-03
 
 ### Added
 
-- v.0.1.4 Add InFileHistory implementation
+- v0.1.4 Add InFileHistory implementation (f51d2dc)
 
 ### Changed
 
