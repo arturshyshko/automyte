@@ -1,7 +1,7 @@
 import abc
 import typing as t
 
-from .file import File
+from ..file import File
 
 
 # NOTE: Maybe split it into FilesBackend + ProjectExplorer class, so then ProjectExplorer is responsible for filters, backend is for getting/saving files

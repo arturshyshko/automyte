@@ -10,10 +10,11 @@ Here's a list of things I need to remember to implement or think about:
   or maybe use the type guards feature in python?
 1. Check for any bash command error wherever they are called and handle an error? Raise exception?
 
-
 ## Project,ProjectExplorer,Files,Filters
 
 1. Add create() function in File interface + implement in OSFile
+1. Cover LocalFilesExplorer() with tests
+1. Cover Project() with tests
 
 ## Config
 
@@ -24,13 +25,11 @@ Here's a list of things I need to remember to implement or think about:
 
 ## VCS
 
-1. Update whole Git implementation
-1. Handle situation when requested branch already exists for worktree?
-1. Think about pushing to remote, PRs and auth for them?
 1. Add support for File | Filter objects in git.add() implementation
 1. Think about the whole remote validation and setup? like, I want to use remote='smth' instead of 'origin'
 1. allow using stash for git, based on vcsconfig.non_disruption_strategy = 'stash' | 'worktree' ??
 1. Think about running git amend? Add OnMode(amend='...', run='...') guard? It would also require to update vcs interface?
+1. Think about pushing to remote, PRs and auth for them?
 1. Add vcs.pr() task which will check if you have gh (or other client) installed and call them
 
 ## History
@@ -38,9 +37,10 @@ Here's a list of things I need to remember to implement or think about:
 1. Think about having history per task?
 1. Implement CLI for managing history
 
-## Guards
+## Tasks
 
 1. Move guards and breakpoint and other basic tasks to tasks folder. Use contrib only for extension like libcst
+1. Cover TasksFlow with tests, upgrade *args interface
 1. Think again about guards implementation, not exatly the fan of a base class
 1. Think about typing for guards
 1. Add ActOn task guard which accepts filters to filter files further? Like:
