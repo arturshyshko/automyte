@@ -13,7 +13,6 @@ Here's a list of things I need to remember to implement or think about:
 ## Project,ProjectExplorer,Files,Filters
 
 1. Add create() function in File interface + implement in OSFile
-1. Cover LocalFilesExplorer() with tests
 1. Cover Project() with tests
 
 ## Config
