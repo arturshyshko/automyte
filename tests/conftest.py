@@ -5,6 +5,8 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+from automyte.utils import bash
+
 _DirName: t.TypeAlias = str
 _FileName: t.TypeAlias = str
 _FileContents: t.TypeAlias = str
@@ -37,7 +39,8 @@ def tmp_local_project_factory():
 
         def _create_tmp_project(structure: _ProjectStructure, dir: str | None = None):
             if dir:  # Recursive call, just need to create child dirs.
-                os.mkdir(dir)
+                if not Path(dir).exists():
+                    os.mkdir(dir)
                 current_dir = dir
             else:  # First call, need to create TMP dir as parent and add it to array for removal.
                 new_tmp_dir = TemporaryDirectory()
@@ -58,3 +61,19 @@ def tmp_local_project_factory():
     finally:
         for dir in rootdirs:
             dir.cleanup()
+
+
+@pytest.fixture
+def tmp_git_repo(tmp_local_project_factory):
+    def _tmp_git_repo_factory(initial_structure, unstaged_structure=None):
+        dir = tmp_local_project_factory(initial_structure)
+        bash.execute(["git", "-C", dir, "init"])
+        bash.execute(["git", "-C", dir, "add", "--all"])
+        bash.execute(["git", "-C", dir, "commit", "-m", "Initial commit"])
+
+        if unstaged_structure:
+            tmp_local_project_factory(unstaged_structure, dir=dir)
+
+        return dir
+
+    return _tmp_git_repo_factory

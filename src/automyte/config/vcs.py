@@ -8,7 +8,7 @@ SupportedVCS: t.TypeAlias = t.Literal["git"]
 class VCSConfig:
     default_vcs: SupportedVCS
     main_branch: str = "master"
-    work_branch: str | None = "automate"
+    work_branch: str = "automate"
     dont_disrupt_prior_state: bool = True
 
     @classmethod
