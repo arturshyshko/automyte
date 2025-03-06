@@ -10,11 +10,20 @@ from .types import BaseTask, FileTask, InstructionForAutomaton, TaskReturn
 
 class TasksFlow:
     def __init__(
-        self, *args: list[FileTask], preprocess: list[BaseTask] | None = None, postprocess: list[BaseTask] | None = None
+        self,
+        *tasks: FileTask | list[FileTask],
+        preprocess: list[BaseTask] | None = None,
+        postprocess: list[BaseTask] | None = None,
     ):
         self.preprocess_tasks = preprocess or []
         self.postprocess_tasks = postprocess or []
-        self.tasks = list(*args)
+
+        self.tasks = []
+        for task in tasks:
+            if isinstance(task, list):
+                self.tasks.extend(task)
+            else:
+                self.tasks.append(task)
 
     def execute(self, project: Project, ctx: "RunContext"):
         for preprocess_task in self.preprocess_tasks:
