@@ -27,21 +27,15 @@ class TasksFlow:
 
     def execute(self, project: Project, ctx: "RunContext"):
         for preprocess_task in self.preprocess_tasks:
-            instruction = self._handle_task_call(ctx=ctx, task=preprocess_task, file=None)
-
-            if instruction == "skip":
-                return AutomatonRunResult(status="skipped")
-            elif instruction == "abort":
-                return AutomatonRunResult(status="fail", error=str(ctx.previous_return.value))
+            result = execute_task(ctx=ctx, task=preprocess_task, file=None)
+            if result:
+                return result
 
         for file in project.explorer.explore():
             for process_file_task in self.tasks:
-                instruction = self._handle_task_call(ctx=ctx, task=process_file_task, file=file)
-
-                if instruction == "skip":
-                    return AutomatonRunResult(status="skipped")
-                elif instruction == "abort":
-                    return AutomatonRunResult(status="fail", error=str(ctx.previous_return.value))
+                result = execute_task(ctx=ctx, task=process_file_task, file=file)
+                if result:
+                    return result
 
             ctx.cleanup_file_returns()
 
@@ -49,35 +43,52 @@ class TasksFlow:
         project.apply_changes()
 
         for post_task in self.postprocess_tasks:
-            instruction = self._handle_task_call(ctx=ctx, task=post_task, file=None)
-
-            if instruction == "skip":
-                return AutomatonRunResult(status="skipped")
-            elif instruction == "abort":
-                return AutomatonRunResult(status="fail", error=str(ctx.previous_return.value))
+            result = execute_task(ctx=ctx, task=post_task, file=None)
+            if result:
+                return result
 
         return AutomatonRunResult(status="success")
 
-    def _handle_task_call(self, ctx: "RunContext", task: BaseTask, file: File | None) -> "InstructionForAutomaton":
-        """Convenience wrapper for calling and handling all tasks.
 
-        Wraps plain python values into TaskReturns,
-            so that user doesn't have to do it unless they want to specify behaviour;
-        Save task return into ctx;
-        Return instruction for automaton on what to do next (like skip the project, continue or abort right away).
+def execute_task(ctx: "RunContext", task: BaseTask, file: File | None) -> AutomatonRunResult | None:
+    """The main entrypoint for actually calling tasks inside automaton.
 
-        If the task raised an Exception - save it's value into task return with "errored" status and instruct to abort.
-        """
-        try:
-            task_result = wrap_task_result(task(ctx, file))
+    Will wrap all returns into TaskReturns and save them to ctx;
+    Handles exceptions inside tasks and sends abort instruction to automaton;
 
-        except Exception as e:
-            ctx.save_task_result(result=TaskReturn(instruction="abort", value=str(e), status="errored"), file=file)
-            return "abort"
+    If return value is None - flow is to just continue executing tasks,
+        otherwise, need to interrupt.
+    """
+    instruction = handle_task_call(ctx=ctx, task=task, file=file)
 
-        else:
-            ctx.save_task_result(result=task_result, file=file)
-            return task_result.instruction
+    if instruction == "skip":
+        return AutomatonRunResult(status="skipped")
+    elif instruction == "abort":
+        return AutomatonRunResult(status="fail", error=str(ctx.previous_return.value))
+
+    return None
+
+
+def handle_task_call(ctx: "RunContext", task: BaseTask, file: File | None) -> "InstructionForAutomaton":
+    """Convenience wrapper for calling and handling all tasks.
+
+    Wraps plain python values into TaskReturns,
+        so that user doesn't have to do it unless they want to specify behaviour;
+    Save task return into ctx;
+    Return instruction for automaton on what to do next (like skip the project, continue or abort right away).
+
+    If the task raised an Exception - save it's value into task return with "errored" status and instruct to abort.
+    """
+    try:
+        task_result = wrap_task_result(task(ctx, file))
+
+    except Exception as e:
+        ctx.save_task_result(result=TaskReturn(instruction="abort", value=str(e), status="errored"), file=file)
+        return "abort"
+
+    else:
+        ctx.save_task_result(result=task_result, file=file)
+        return task_result.instruction
 
 
 def wrap_task_result(value: t.Any) -> TaskReturn:

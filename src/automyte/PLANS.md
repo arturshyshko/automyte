@@ -13,7 +13,7 @@ Here's a list of things I need to remember to implement or think about:
 ## Project,ProjectExplorer,Files,Filters
 
 1. Add create() function in File interface + implement in OSFile
-1. Cover Project() with tests
+1. Add preflight_check() function to Project which is to be ran for all projects during Automaton validation phase
 
 ## Config
 
@@ -33,6 +33,7 @@ Here's a list of things I need to remember to implement or think about:
 
 ## History
 
+1. Use InFileHistory instance for automatons by default
 1. Think about having history per task?
 1. Implement CLI for managing history
 
@@ -49,6 +50,7 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Future,docs,misc
 
+1. Setup docs for the project, after done with Guards -> Breakpoint -> Config (at least)
 1. Think about having AutomatonRunResult status as enum field?
     Purely for docs purpose, like "new" status means that project's never been run before.
 1. Dry run???
