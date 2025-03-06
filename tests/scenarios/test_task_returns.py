@@ -38,7 +38,7 @@ def test_simple_return_with_one_file(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             )
         ],
-        flow=TasksFlow([replace, second_task]),
+        tasks=TasksFlow([replace, second_task]),
     ).run()
 
     with open(f"{dir}/src/hello.txt", "r") as f:
@@ -57,7 +57,7 @@ def test_simple_return_with_multiple_files(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="o")),
             )
         ],
-        flow=TasksFlow([replace, second_task]),
+        tasks=TasksFlow([replace, second_task]),
     ).run()
 
     with open(f"{dir}/src/bye.txt", "r") as f:

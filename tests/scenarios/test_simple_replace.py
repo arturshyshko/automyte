@@ -38,7 +38,7 @@ def test_replacing_text(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             ),
         ],
-        flow=TasksFlow([lol]),
+        tasks=TasksFlow([lol]),
     ).run()
 
     with open(f"{dir}/src/hello.txt", "r") as f:

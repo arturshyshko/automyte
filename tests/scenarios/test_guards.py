@@ -21,7 +21,7 @@ def test_guards_simple(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             ),
         ],
-        flow=TasksFlow(
+        tasks=TasksFlow(
             [
                 guards.Conditional(
                     lol,

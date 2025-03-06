@@ -41,7 +41,7 @@ def test_worktree_setup(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             ),
         ],
-        flow=TasksFlow(
+        tasks=TasksFlow(
             [
                 lol,
                 # vcs.add()

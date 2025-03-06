@@ -46,7 +46,7 @@ def test_skip_works_immediately_and_updates_history(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             )
         ],
-        flow=TasksFlow([instruct_to_skip, second_task]),
+        tasks=TasksFlow([instruct_to_skip, second_task]),
     ).run()
 
     with open(f"{dir}/src/hello.txt", "r") as f:
@@ -69,7 +69,7 @@ def test_abort_works_immediately_and_updates_history(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             )
         ],
-        flow=TasksFlow([instruct_to_abort, second_task]),
+        tasks=TasksFlow([instruct_to_abort, second_task]),
     ).run()
 
     with open(f"{dir}/src/hello.txt", "r") as f:
@@ -92,7 +92,7 @@ def test_task_exception_abort_run(tmp_local_project_factory):
                 explorer=LocalFilesExplorer(rootdir=dir, filter_by=ContainsFilter(contains="hello world")),
             )
         ],
-        flow=TasksFlow([error_out, second_task]),
+        tasks=TasksFlow([error_out, second_task]),
     ).run()
 
     with open(f"{dir}/src/hello.txt", "r") as f:

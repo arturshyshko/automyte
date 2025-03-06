@@ -34,7 +34,7 @@ def test_targetting_by_target_id(tmp_local_project_factory):
             Project(explorer=LocalFilesExplorer(rootdir=rootdir1, filter_by=filters), project_id="proj1"),
             Project(explorer=LocalFilesExplorer(rootdir=rootdir2, filter_by=filters), project_id="proj2"),
         ],
-        flow=TasksFlow([lambda ctx, file: None]),
+        tasks=TasksFlow([lambda ctx, file: None]),
         history=history,
     )
 
@@ -70,7 +70,7 @@ def test_targetting_by_status(tmp_local_project_factory, initial_status, target_
             Project(explorer=LocalFilesExplorer(rootdir=rootdir1, filter_by=filters), project_id="proj1"),
             Project(explorer=LocalFilesExplorer(rootdir=rootdir2, filter_by=filters), project_id="proj2"),
         ],
-        flow=TasksFlow([lambda ctx, file: None]),
+        tasks=TasksFlow([lambda ctx, file: None]),
         history=history,
     )
 

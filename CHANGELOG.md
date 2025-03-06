@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] 2025-03-06
+
+### Changed
+
+- v0.1.6 Allow passing plain tasks list to automaton
+- v0.1.6 Use vcs config .get_default() for Config.get_default() (68cdb2c)
+- v0.1.6 Move explorers into separate subdir (67c83cf)
+
+### Fixed
+
+- v0.1.6  Fix automaton targetting for "new" projects (f0e2ff2)
+
 ## [0.1.5] 2025-03-05
 
 ### Added

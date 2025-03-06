@@ -6,6 +6,7 @@ from automyte.project import Project
 
 from .flow import TasksFlow
 from .run_context import RunContext
+from .types import FileTask
 
 
 class Automaton:
@@ -13,7 +14,7 @@ class Automaton:
         self,
         name: str,
         projects: list[Project],
-        flow: TasksFlow,
+        tasks: TasksFlow | list[FileTask],
         config: Config | None = None,
         history: History | None = None,
     ):
@@ -21,7 +22,11 @@ class Automaton:
         self.config: Config = config or Config.get_default()
         self.history: History = history or InMemoryHistory()
         self.projects = projects
-        self.flow = flow
+
+        if isinstance(tasks, TasksFlow):
+            self.flow = tasks
+        else:
+            self.flow = TasksFlow(*tasks)
 
     def run(self):
         for project in self._get_target_projects():
