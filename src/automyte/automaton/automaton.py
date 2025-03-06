@@ -52,15 +52,20 @@ class Automaton:
 
     def _get_target_projects(self) -> t.Generator[Project, None, None]:
         targets = {p.project_id: p for p in self.projects}
+        projects_in_history = self.history.read(self.name)
         filter_by_status = lambda status: {  # Get projects from targets based on their status in history.
-            proj_id: targets[proj_id] for proj_id, run in self.history.read(self.name).items() if run.status == status
+            proj_id: targets[proj_id] for proj_id, run in projects_in_history.items() if run.status == status
         }
 
         match self.config.target:
             case "all":
                 pass
             case "new":
-                targets = filter_by_status("new")
+                new_targets = filter_by_status("new")
+                targets = {  # Including projects that are not in the history yet (if added for 2nd run for example).
+                    **new_targets,
+                    **{pid: proj for pid, proj in targets.items() if pid not in projects_in_history},
+                }
             case "failed":
                 targets = filter_by_status("fail")
             case "successful":
