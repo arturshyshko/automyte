@@ -22,10 +22,7 @@ class Config:
         return cls(
             mode="run",
             stop_on_fail=True,
-            vcs=VCSConfig(
-                default_vcs="git",
-                dont_disrupt_prior_state=True,
-            ),
+            vcs=VCSConfig.get_default(),
             **kwargs,
         )
 
