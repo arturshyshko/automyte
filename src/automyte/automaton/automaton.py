@@ -27,18 +27,18 @@ class Automaton:
         for project in self._get_target_projects():
             result = AutomatonRunResult(status="running")
             previous_result = self.history.get_status(self.name, project.project_id)
+            ctx = RunContext(
+                automaton_name=self.name,
+                config=self.config,
+                vcs=project.vcs,
+                project=project,
+                current_status=result,
+                previous_status=previous_result,
+                global_tasks_returns=[],
+                file_tasks_returns=[],
+            )
 
             try:
-                ctx = RunContext(
-                    automaton_name=self.name,
-                    config=self.config,
-                    vcs=project.vcs,
-                    project=project,
-                    current_status=result,
-                    previous_status=previous_result,
-                    global_tasks_returns=[],
-                    file_tasks_returns=[],
-                )
                 result = self._execute_for_project(project, ctx)
 
             except Exception as e:
