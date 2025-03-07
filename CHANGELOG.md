@@ -7,11 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] 2025-03-07
+
+### Added
+
+- v0.1.7 Setup basic conditionals for flow control (d0f41d7)
+- v0.1.7 Add execute_tasks_sequence() util for proper calling multiple tasks in a row (d0f41d7)
+
+### Changed
+
+- v0.1.7 Move guards to flow controllers and fix implementation
+- v0.1.7 Extract task execution logic into execute_task() func (4d819ee)
+
 ## [0.1.6] 2025-03-06
 
 ### Changed
 
-- v0.1.6 Allow passing plain tasks list to automaton
+- v0.1.6 Allow passing plain tasks list to automaton (daa6883)
 - v0.1.6 Use vcs config .get_default() for Config.get_default() (68cdb2c)
 - v0.1.6 Move explorers into separate subdir (67c83cf)
 

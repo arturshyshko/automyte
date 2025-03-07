@@ -39,9 +39,7 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Tasks
 
-1. Move guards and breakpoint and other basic tasks to tasks folder. Use contrib only for extension like libcst
-1. Think again about guards implementation, not exatly the fan of a base class
-1. Think about typing for guards
+1. Move breakpoint and other basic tasks to tasks folder. Use contrib only for extension like libcst
 1. Add ActOn task guard which accepts filters to filter files further? Like:
   ActOn(filter_by: Filter, tasks=...)
 1. TaskGuard to (only run if "run" mode for example)

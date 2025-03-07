@@ -1,12 +1,24 @@
 import typing as t
 
-from automyte import Automaton, Config, ContainsFilter, File, LocalFilesExplorer, Project, RunContext, TasksFlow, guards
+from automyte import (
+    Automaton,
+    Config,
+    ContainsFilter,
+    File,
+    LocalFilesExplorer,
+    Project,
+    RunContext,
+    TasksFlow,
+    conditionals,
+    guards,
+)
 
 
-def lol(ctx: RunContext, file: File):
+def lol(ctx: RunContext, file: File | None):
     import re
 
-    file.edit(re.sub(r"world", "there", file.get_contents()))
+    if file:
+        file.edit(re.sub(r"world", "there", file.get_contents()))
 
 
 def test_guards_simple(tmp_local_project_factory):
@@ -23,7 +35,7 @@ def test_guards_simple(tmp_local_project_factory):
         ],
         tasks=TasksFlow(
             [
-                guards.Conditional(
+                conditionals.RunOn(
                     lol,
                     lol,
                     lol,
