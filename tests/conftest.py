@@ -7,6 +7,7 @@ import pytest
 
 from automyte.automaton.run_context import RunContext
 from automyte.config.base import Config
+from automyte.discovery import OSFile
 from automyte.history.types import AutomatonRunResult
 from automyte.project import Project
 from automyte.utils import bash
@@ -107,3 +108,18 @@ def run_ctx():
         )
 
     return _ctx_factory
+
+
+@pytest.fixture
+def tmp_os_file(tmp_local_project_factory):
+    def _tmp_file_factory(contents: str, filename: str | None = None) -> OSFile:
+        filename = filename or random_hash()
+        dir = tmp_local_project_factory(structure={filename: contents})
+
+        filepath = Path(dir) / filename
+        with open(filepath, "w") as f:
+            f.write(contents)
+
+        return OSFile(fullname=str(filepath))
+
+    return _tmp_file_factory

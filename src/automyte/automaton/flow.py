@@ -50,6 +50,27 @@ class TasksFlow:
         return AutomatonRunResult(status="success")
 
 
+def execute_tasks_sequence(tasks: list[BaseTask], ctx: RunContext, file: File | None):
+    """Similar to 'execute_task', except designed to run a sequence of tasks.
+
+    This function is necessary to stop calls chain, if any of the tasks results in 'abort' or 'skip' instruction.
+    """
+    instruction: InstructionForAutomaton = "continue"
+    for task in tasks:
+        instruction = handle_task_call(task=task, ctx=ctx, file=file)
+        # If any of the tasks in the sequence resulted in 'abort' or 'skip',
+        # don't execute any of the remaining tasks and stop automaton run.
+        if instruction != "continue":
+            break
+
+    if instruction == "skip":
+        return AutomatonRunResult(status="skipped")
+    elif instruction == "abort":
+        return AutomatonRunResult(status="fail", error=str(ctx.previous_return.value))
+
+    return None
+
+
 def execute_task(ctx: "RunContext", task: BaseTask, file: File | None) -> AutomatonRunResult | None:
     """The main entrypoint for actually calling tasks inside automaton.
 
