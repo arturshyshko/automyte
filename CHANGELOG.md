@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8] 2025-03-07
+
+### Changed
+
+- v0.1.8 Update Breakpoint implementation
+
 ## [0.1.7] 2025-03-07
 
 ### Added
@@ -16,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- v0.1.7 Move guards to flow controllers and fix implementation
+- v0.1.7 Move guards to flow controllers and fix implementation (ccc75cb)
 - v0.1.7 Extract task execution logic into execute_task() func (4d819ee)
 
 ## [0.1.6] 2025-03-06

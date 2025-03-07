@@ -39,13 +39,6 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Tasks
 
-1. Move breakpoint and other basic tasks to tasks folder. Use contrib only for extension like libcst
-1. Add ActOn task guard which accepts filters to filter files further? Like:
-  ActOn(filter_by: Filter, tasks=...)
-1. TaskGuard to (only run if "run" mode for example)
-  or if branches, some conditions, whatever - just some built-in util class
-1. Update Breakpoint() implementation to give user input prompt with options like: "flush", "pdb", ...
-
 ## Future,docs,misc
 
 1. Setup docs for the project, after done with Guards -> Breakpoint -> Config (at least)
