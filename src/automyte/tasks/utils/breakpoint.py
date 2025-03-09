@@ -18,10 +18,18 @@ _allowed_options = ["d", "a", "p", "c"]
 _possible_options = t.Literal["d", "a", "p", "c"]
 
 
+# TODO: Update implementation, to have "interactive=True, call_once=True" in init
+# call_once is for it to only be called once, either on first or if possible - last file
+# interactive - enables consoles input, otherwise - allow calling Breakpoint.flush(), ...?
 class Breakpoint:
+    def __init__(self, select_option: _possible_options | None = None):
+        # self.select_option = select_option
+        ...
+
     def __call__(self, ctx: RunContext, file: File | None):
         while True:
             choice = self._get_input(_user_prompt)
+
             if not choice:
                 return
             elif choice not in _allowed_options:
