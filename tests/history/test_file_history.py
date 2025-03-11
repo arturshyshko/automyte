@@ -41,16 +41,16 @@ class TestInFileHistoryRead:
         with pytest.raises(ValueError, match=".*does not exist*"):
             InFileHistory(filename="some/nonexistant/like/definitely/path/").read("whatever")
 
-    def test_read_will_create_empty_default_file_in_existing_dir(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(structure={"src": {}})
+    def test_read_will_create_empty_default_file_in_existing_dir(self, tmp_local_project):
+        dir = tmp_local_project(structure={"src": {}})
 
         result = InFileHistory(filename=f"{dir}/src/").read("whatever")
 
         assert result == {}
         assert (Path(dir) / "src" / "automyte_history.csv").exists()
 
-    def test_read_will_raise_if_file_parent_dir_doesnt_exist(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(structure={"src": {}})
+    def test_read_will_raise_if_file_parent_dir_doesnt_exist(self, tmp_local_project):
+        dir = tmp_local_project(structure={"src": {}})
 
         with pytest.raises(ValueError, match=".*does not exist*"):
             InFileHistory(filename=Path(dir) / "src" / "nonexistant_folder" / "history.csv").read("whatever")
@@ -90,8 +90,8 @@ class TestInFileHistoryGetStatus:
 
         assert result == AutomatonRunResult("new")
 
-    def test_retrieval_for_the_first_run(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(structure={"src": {}})
+    def test_retrieval_for_the_first_run(self, tmp_local_project):
+        dir = tmp_local_project(structure={"src": {}})
 
         # In the first run, file might not exist, making sure we just get new run.
         result = InFileHistory(filename=f"{dir}/src").get_status(automaton_name="auto", project_id="proj1")

@@ -26,8 +26,8 @@ def second_task(ctx: RunContext, file: File):
         file.edit(re.sub(r"good", "bad", file.get_contents()))
 
 
-def test_simple_return_with_one_file(tmp_local_project_factory):
-    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
+def test_simple_return_with_one_file(tmp_local_project):
+    dir = tmp_local_project(structure={"src": {"hello.txt": "hello world!"}})
 
     Automaton(
         name="impl1",
@@ -45,8 +45,8 @@ def test_simple_return_with_one_file(tmp_local_project_factory):
         assert f.read() == "hello there!"
 
 
-def test_simple_return_with_multiple_files(tmp_local_project_factory):
-    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!", "bye.txt": "good bye!"}})
+def test_simple_return_with_multiple_files(tmp_local_project):
+    dir = tmp_local_project(structure={"src": {"hello.txt": "hello world!", "bye.txt": "good bye!"}})
 
     Automaton(
         name="impl1",

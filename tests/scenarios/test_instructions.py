@@ -32,8 +32,8 @@ def second_task(ctx: RunContext, file: File):
     file.edit(re.sub(r"world", "there", file.get_contents()))
 
 
-def test_skip_works_immediately_and_updates_history(tmp_local_project_factory):
-    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
+def test_skip_works_immediately_and_updates_history(tmp_local_project):
+    dir = tmp_local_project(structure={"src": {"hello.txt": "hello world!"}})
 
     history = InMemoryHistory()
     Automaton(
@@ -55,8 +55,8 @@ def test_skip_works_immediately_and_updates_history(tmp_local_project_factory):
     assert history.get_status("impl1", "test_project") == AutomatonRunResult(status="skipped")
 
 
-def test_abort_works_immediately_and_updates_history(tmp_local_project_factory):
-    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
+def test_abort_works_immediately_and_updates_history(tmp_local_project):
+    dir = tmp_local_project(structure={"src": {"hello.txt": "hello world!"}})
 
     history = InMemoryHistory()
     Automaton(
@@ -78,8 +78,8 @@ def test_abort_works_immediately_and_updates_history(tmp_local_project_factory):
     assert history.get_status("impl1", "test_project") == AutomatonRunResult(status="fail", error="smth is wrong")
 
 
-def test_task_exception_abort_run(tmp_local_project_factory):
-    dir = tmp_local_project_factory(structure={"src": {"hello.txt": "hello world!"}})
+def test_task_exception_abort_run(tmp_local_project):
+    dir = tmp_local_project(structure={"src": {"hello.txt": "hello world!"}})
 
     history = InMemoryHistory()
     Automaton(

@@ -43,12 +43,12 @@ class TestFlowInit:
 
 
 class TestFlowExecute:
-    def test_tasks_calls_ordering(self, tmp_local_project_factory, run_ctx):
+    def test_tasks_calls_ordering(self, tmp_local_project, run_ctx):
         outputs = []
         preprocess = lambda ctx, file: outputs.append("preprocess")
         postprocess = lambda ctx, file: outputs.append("postprocess")
         normal_task = lambda ctx, file: outputs.append("normal task")
-        ctx = run_ctx(dir=tmp_local_project_factory({"hello.txt": "hello flow"}))
+        ctx = run_ctx(dir=tmp_local_project({"hello.txt": "hello flow"}))
 
         TasksFlow([normal_task], preprocess=[preprocess], postprocess=[postprocess]).execute(ctx.project, ctx)
 
@@ -56,18 +56,18 @@ class TestFlowExecute:
         assert outputs[1] == "normal task"
         assert outputs[2] == "postprocess"
 
-    def test_saves_task_returns_to_ctx(self, tmp_local_project_factory, run_ctx):
+    def test_saves_task_returns_to_ctx(self, tmp_local_project, run_ctx):
         expected_return = TaskReturn(instruction="continue", status="processed", value="smth")
         task = lambda ctx, file: expected_return
-        ctx = run_ctx(dir=tmp_local_project_factory({"hello.txt": "hello flow"}))
+        ctx = run_ctx(dir=tmp_local_project({"hello.txt": "hello flow"}))
         with patch("automyte.automaton.run_context.RunContext.save_task_result") as save_mock:
             TasksFlow(task).execute(ctx.project, ctx)
 
         save_mock.assert_called_once_with(result=expected_return, file=ANY)
 
-    def test_plain_return_is_wrapped_as_task_return_with_correct_defaults(self, tmp_local_project_factory, run_ctx):
+    def test_plain_return_is_wrapped_as_task_return_with_correct_defaults(self, tmp_local_project, run_ctx):
         task = lambda ctx, file: "smth"
-        ctx = run_ctx(dir=tmp_local_project_factory({"hello.txt": "hello flow"}))
+        ctx = run_ctx(dir=tmp_local_project({"hello.txt": "hello flow"}))
 
         with patch("automyte.automaton.run_context.RunContext.save_task_result") as save_mock:
             TasksFlow(task).execute(ctx.project, ctx)
@@ -76,10 +76,10 @@ class TestFlowExecute:
             result=TaskReturn(value="smth", instruction="continue", status="processed"), file=ANY
         )
 
-    def test_tasks_are_called_once_per_file(self, tmp_local_project_factory, run_ctx):
+    def test_tasks_are_called_once_per_file(self, tmp_local_project, run_ctx):
         files_called_for = []
         track_calls = lambda ctx, file: files_called_for.append(file.name)
-        ctx = run_ctx(dir=tmp_local_project_factory({"src": {"hello.txt": "hello flow", "bye.txt": "bye flow"}}))
+        ctx = run_ctx(dir=tmp_local_project({"src": {"hello.txt": "hello flow", "bye.txt": "bye flow"}}))
 
         TasksFlow(track_calls).execute(ctx.project, ctx)
 
@@ -87,8 +87,8 @@ class TestFlowExecute:
         assert next(f for f in files_called_for if f == "hello.txt")
         assert next(f for f in files_called_for if f == "bye.txt")
 
-    def test_changes_are_applied_before_postprocess_tasks(self, tmp_local_project_factory, run_ctx):
-        ctx = run_ctx(dir=tmp_local_project_factory({"src": {"hello.txt": "hello flow"}}))
+    def test_changes_are_applied_before_postprocess_tasks(self, tmp_local_project, run_ctx):
+        ctx = run_ctx(dir=tmp_local_project({"src": {"hello.txt": "hello flow"}}))
         update_file = lambda ctx, file: file.edit("changed")
         read_file = lambda ctx, file: OSFile(fullname=f"{ctx.project.rootdir}/src/hello.txt").get_contents()
 
@@ -96,8 +96,8 @@ class TestFlowExecute:
 
         assert ctx.previous_return.value == "changed"
 
-    def test_abort_task_instructions_return_immediately(self, tmp_local_project_factory, run_ctx):
-        ctx = run_ctx(dir=tmp_local_project_factory({"src": {"hello.txt": "hello flow"}}))
+    def test_abort_task_instructions_return_immediately(self, tmp_local_project, run_ctx):
+        ctx = run_ctx(dir=tmp_local_project({"src": {"hello.txt": "hello flow"}}))
         has_next_task_been_called = []
         check_if_called = lambda ctx, file: has_next_task_been_called.append("whatever, will just check falsy list")
         instruct = lambda ctx, file: TaskReturn(instruction="abort", value="oops")
@@ -107,8 +107,8 @@ class TestFlowExecute:
         assert not has_next_task_been_called
         assert output == AutomatonRunResult(status="fail", error="oops")
 
-    def test_skip_task_instructions_return_immediately(self, tmp_local_project_factory, run_ctx):
-        ctx = run_ctx(dir=tmp_local_project_factory({"src": {"hello.txt": "hello flow"}}))
+    def test_skip_task_instructions_return_immediately(self, tmp_local_project, run_ctx):
+        ctx = run_ctx(dir=tmp_local_project({"src": {"hello.txt": "hello flow"}}))
         has_next_task_been_called = []
         check_if_called = lambda ctx, file: has_next_task_been_called.append("whatever, will just check falsy list")
         instruct = lambda ctx, file: TaskReturn(instruction="skip")
@@ -118,8 +118,8 @@ class TestFlowExecute:
         assert not has_next_task_been_called
         assert output == AutomatonRunResult(status="skipped")
 
-    def test_exception_raised_inside_task_results_in_abort(self, tmp_local_project_factory, run_ctx):
-        ctx = run_ctx(dir=tmp_local_project_factory({"src": {"hello.txt": "hello flow"}}))
+    def test_exception_raised_inside_task_results_in_abort(self, tmp_local_project, run_ctx):
+        ctx = run_ctx(dir=tmp_local_project({"src": {"hello.txt": "hello flow"}}))
         has_next_task_been_called = []
         check_if_called = lambda ctx, file: has_next_task_been_called.append("whatever, will just check falsy list")
 

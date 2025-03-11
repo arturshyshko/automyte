@@ -91,8 +91,8 @@ class TestOSFileMove:
 
         assert file.get_contents() == "revision 1"
 
-    def test_both_arguments_update_fullpath(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({"src": {"subdir1": {"oldname.txt": "revision 1"}, "subdir2": {}}})
+    def test_both_arguments_update_fullpath(self, tmp_local_project):
+        dir = tmp_local_project({"src": {"subdir1": {"oldname.txt": "revision 1"}, "subdir2": {}}})
         file = OSFile(fullname=f"{dir}/subdir1/oldname.txt")
 
         file.move(to=f"{dir}/subdir2", new_name="newname.txt")

@@ -20,8 +20,8 @@ def lol(ctx: RunContext, file: File):
     file.edit(re.sub(r"world", "there", file.get_contents()))
 
 
-def test_replacing_text(tmp_local_project_factory):
-    dir = tmp_local_project_factory(
+def test_replacing_text(tmp_local_project):
+    dir = tmp_local_project(
         structure={
             "src": {
                 "hello.txt": "hello world!",

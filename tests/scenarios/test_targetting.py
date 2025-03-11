@@ -16,9 +16,9 @@ from automyte import (
 )
 
 
-def test_targetting_by_target_id(tmp_local_project_factory):
-    rootdir1 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
-    rootdir2 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
+def test_targetting_by_target_id(tmp_local_project):
+    rootdir1 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
+    rootdir2 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
 
     history = InMemoryHistory()
     history.set_status("hello", "proj1", AutomatonRunResult(status="fail"))
@@ -52,9 +52,9 @@ def test_targetting_by_target_id(tmp_local_project_factory):
         ("skipped", "skipped"),
     ],
 )
-def test_targetting_by_status(tmp_local_project_factory, initial_status, target_status):
-    rootdir1 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
-    rootdir2 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
+def test_targetting_by_status(tmp_local_project, initial_status, target_status):
+    rootdir1 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
+    rootdir2 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
 
     history = InMemoryHistory()
     history.set_status("hello", "proj1", AutomatonRunResult(status=initial_status))

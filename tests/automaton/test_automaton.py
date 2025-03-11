@@ -49,9 +49,9 @@ class TestAutomatonInit:
         assert flow.tasks[0] is dummy_task
         assert flow.tasks[1] is dummy_task
 
-    def test_generates_projects_from_uri(self, tmp_local_project_factory):
-        dir1 = tmp_local_project_factory({})
-        dir2 = tmp_local_project_factory({})
+    def test_generates_projects_from_uri(self, tmp_local_project):
+        dir1 = tmp_local_project({})
+        dir2 = tmp_local_project({})
         projects = Automaton(
             "auto",
             projects=[dir1, Project("proj1", rootdir=dir2)],
@@ -122,7 +122,7 @@ class TestAutomatonTargetting:
 
 
 class TestAutomatonUpdatesHistory:
-    def test_updates_history(self, tmp_local_project_factory):
+    def test_updates_history(self, tmp_local_project):
         successful_task = lambda ctx, file: True
         history = InMemoryHistory()
 
@@ -135,7 +135,7 @@ class TestAutomatonUpdatesHistory:
 
         assert history.get_status("auto", "proj1").status == "success"
 
-    def test_updates_history_for_fail(self, tmp_local_project_factory):
+    def test_updates_history_for_fail(self, tmp_local_project):
         history = InMemoryHistory()
 
         def failed_task(ctx, file):

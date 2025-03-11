@@ -13,9 +13,9 @@ from automyte import (
 )
 
 
-def test_updates_history_to_success(tmp_local_project_factory):
-    rootdir1 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
-    rootdir2 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
+def test_updates_history_to_success(tmp_local_project):
+    rootdir1 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
+    rootdir2 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
 
     history = InMemoryHistory()
     filters = ContainsFilter(contains="hello")
@@ -36,9 +36,9 @@ def test_updates_history_to_success(tmp_local_project_factory):
     assert history.get_status("hello", "proj2") == AutomatonRunResult(status="success")
 
 
-def test_updates_to_fail(tmp_local_project_factory):
-    rootdir1 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
-    rootdir2 = tmp_local_project_factory(structure={"src": {"hello.txt": "hello there"}})
+def test_updates_to_fail(tmp_local_project):
+    rootdir1 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
+    rootdir2 = tmp_local_project(structure={"src": {"hello.txt": "hello there"}})
 
     history = InMemoryHistory()
     filters = ContainsFilter(contains="hello")

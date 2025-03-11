@@ -38,8 +38,8 @@ class TestProjectInit:
         with pytest.raises(ValueError):
             Project(project_id="proj1", vcs=Git(""))
 
-    def test_uses_local_files_explorer_by_default(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_uses_local_files_explorer_by_default(self, tmp_local_project):
+        dir = tmp_local_project({})
         explorer = Project("proj1", rootdir=dir).explorer
 
         assert isinstance(explorer, LocalFilesExplorer)
@@ -52,8 +52,8 @@ class TestProjectInit:
 
         assert proj.rootdir == "smth"
 
-    def test_uses_git_vcs_with_correct_rootdir_by_default(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_uses_git_vcs_with_correct_rootdir_by_default(self, tmp_local_project):
+        dir = tmp_local_project({})
         vcs = Project(project_id="proj1", rootdir=dir).vcs
 
         assert isinstance(vcs, Git)
@@ -74,8 +74,8 @@ class TestProjectApplyChanges:
 
 
 class TestProjectInWorkingState:
-    def test_calls_vcs_preserve_state(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_calls_vcs_preserve_state(self, tmp_local_project):
+        dir = tmp_local_project({})
         vcs = DummyVCS()
 
         with Project("proj1", rootdir=dir, vcs=vcs).in_working_state(Config.get_default()):
@@ -83,8 +83,8 @@ class TestProjectInWorkingState:
 
         assert vcs.preserve_state_called
 
-    def test_sets_and_resets_own_rootdir_if_necessary(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_sets_and_resets_own_rootdir_if_necessary(self, tmp_local_project):
+        dir = tmp_local_project({})
         vcs = DummyVCS()
         project = Project("proj1", rootdir=dir, vcs=vcs)
 
@@ -92,8 +92,8 @@ class TestProjectInWorkingState:
             assert project.rootdir == "newdir"
         assert project.rootdir == dir
 
-    def test_updates_explorer_rootdir(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_updates_explorer_rootdir(self, tmp_local_project):
+        dir = tmp_local_project({})
         vcs = DummyVCS()
         project = Project("proj1", rootdir=dir, vcs=vcs)
 
@@ -103,19 +103,19 @@ class TestProjectInWorkingState:
 
 
 class TestProjectFromUri:
-    def test_generates_correct_rootdir(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_generates_correct_rootdir(self, tmp_local_project):
+        dir = tmp_local_project({})
         assert Project.from_uri(dir).rootdir == dir
 
-    def test_generates_unique_but_readable_project_id(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_generates_unique_but_readable_project_id(self, tmp_local_project):
+        dir = tmp_local_project({})
         with patch("automyte.project.project.random_hash", return_value="smth"):
             project = Project.from_uri(dir)
 
             assert project.project_id == f"smth_{Path(dir).name}"
 
-    def test_sets_correct_explorer(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({})
+    def test_sets_correct_explorer(self, tmp_local_project):
+        dir = tmp_local_project({})
         explorer = Project.from_uri(dir).explorer
 
         assert isinstance(explorer, LocalFilesExplorer)

@@ -8,8 +8,8 @@ from automyte.utils import bash
 
 
 class TestGitRun:
-    def test_correctly_generates_prompt(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory({"src": {"hello.txt": "hello there"}})
+    def test_correctly_generates_prompt(self, tmp_local_project):
+        dir = tmp_local_project({"src": {"hello.txt": "hello there"}})
 
         with patch("automyte.utils.bash.execute") as mock_execute:
             Git(rootdir=dir).run("commit", "--amend", "--no-edit")

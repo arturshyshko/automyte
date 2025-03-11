@@ -21,7 +21,7 @@ _ProjectStructure: t.TypeAlias = dict[_DirName | _FileName, t.Union[_FileContent
 
 
 @pytest.fixture
-def tmp_local_project_factory():
+def tmp_local_project():
     """Setup a tmp project structure with folders, files and their contents for testing.
 
     Returns a factory function which accepts dictionary structure where we specify project structure.
@@ -30,7 +30,7 @@ def tmp_local_project_factory():
     Don't pass "dir" argument, as it is only used for recursive call for internal implementation.
 
     Example:
-        tmp_local_project_factory(structure={
+        tmp_local_project(structure={
             'src': {
                 'subdir1': {
                     'hello.txt': 'this will be the text for src/subdir1/hello.txt file',
@@ -71,15 +71,15 @@ def tmp_local_project_factory():
 
 
 @pytest.fixture
-def tmp_git_repo(tmp_local_project_factory):
+def tmp_git_repo(tmp_local_project):
     def _tmp_git_repo_factory(initial_structure, unstaged_structure=None):
-        dir = tmp_local_project_factory(initial_structure)
+        dir = tmp_local_project(initial_structure)
         bash.execute(["git", "-C", dir, "init"])
         bash.execute(["git", "-C", dir, "add", "--all"])
         bash.execute(["git", "-C", dir, "commit", "-m", "Initial commit"])
 
         if unstaged_structure:
-            tmp_local_project_factory(unstaged_structure, dir=dir)
+            tmp_local_project(unstaged_structure, dir=dir)
 
         return dir
 
@@ -111,10 +111,10 @@ def run_ctx():
 
 
 @pytest.fixture
-def tmp_os_file(tmp_local_project_factory):
+def tmp_os_file(tmp_local_project):
     def _tmp_file_factory(contents: str, filename: str | None = None) -> OSFile:
         filename = filename or random_hash()
-        dir = tmp_local_project_factory(structure={filename: contents})
+        dir = tmp_local_project(structure={filename: contents})
 
         filepath = Path(dir) / filename
         with open(filepath, "w") as f:

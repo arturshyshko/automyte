@@ -7,8 +7,8 @@ from automyte.discovery.filters.base import Filter
 
 
 class TestLocalFilesExplorerExplore:
-    def test_returns_all_files_in_the_rootdir_if_no_filters_provided(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(
+    def test_returns_all_files_in_the_rootdir_if_no_filters_provided(self, tmp_local_project):
+        dir = tmp_local_project(
             {"src": {"hello.txt": "hello explorer"}, "upper": {"inner": {"nested.py": "print(123)"}}}
         )
 
@@ -17,16 +17,16 @@ class TestLocalFilesExplorerExplore:
         assert next((f for f in all_files if f.fullpath == Path(dir) / "src" / "hello.txt"), None)
         assert next((f for f in all_files if f.fullpath == Path(dir) / "upper" / "inner" / "nested.py"), None)
 
-    def test_returns_only_files(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(
+    def test_returns_only_files(self, tmp_local_project):
+        dir = tmp_local_project(
             {"src": {"hello.txt": "hello explorer"}, "upper": {"inner": {"nested.py": "print(123)"}}}
         )
 
         all_files = list(LocalFilesExplorer(rootdir=dir).explore())
         assert len(all_files) == 2
 
-    def test_filters_files_accordingly_to_provided_filter(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(
+    def test_filters_files_accordingly_to_provided_filter(self, tmp_local_project):
+        dir = tmp_local_project(
             {"src": {"hello.txt": "hello explorer"}, "upper": {"inner": {"nested.py": "print(123)"}}}
         )
 
@@ -56,8 +56,8 @@ class TestLocalFilesExplorerRootdir:
 
 
 class TestLocalFilesExplorerFlush:
-    def test_flushes_tainted_files(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(
+    def test_flushes_tainted_files(self, tmp_local_project):
+        dir = tmp_local_project(
             {"src": {"hello.txt": "hello explorer"}, "upper": {"inner": {"nested.py": "print(123)"}}}
         )
         explorer = LocalFilesExplorer(rootdir=dir)
@@ -70,8 +70,8 @@ class TestLocalFilesExplorerFlush:
         with open(f"{dir}/src/hello.txt", "r") as flushed_file:
             assert flushed_file.read() == "good bye explorer"
 
-    def test_doesnt_change_untainted_files(self, tmp_local_project_factory):
-        dir = tmp_local_project_factory(
+    def test_doesnt_change_untainted_files(self, tmp_local_project):
+        dir = tmp_local_project(
             {"src": {"hello.txt": "hello explorer"}, "upper": {"inner": {"nested.py": "print(123)"}}}
         )
         explorer = LocalFilesExplorer(rootdir=dir)
