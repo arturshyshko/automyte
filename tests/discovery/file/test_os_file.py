@@ -126,3 +126,9 @@ class TestOSFileFlush:
         file.move(new_name="newname").flush()
 
         assert not os.path.exists(old_path)
+
+
+class TestOSFileProperties:
+    def test_extension_is_included_in_the_name(self, tmp_os_file):
+        file: OSFile = tmp_os_file("whatever", filename="my_file.txt")
+        assert file.name == "my_file.txt"

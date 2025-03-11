@@ -21,8 +21,6 @@ Here's a list of things I need to remember to implement or think about:
 
 1. Add create() function in File interface + implement in OSFile
 1. Add preflight_check() function to Project which is to be ran for all projects during Automaton validation phase
-1. Filename or Folder filters implementation - think on combining or splitting + how to handle relative path inside project?
-  * use relative_to() for folder filtering relative to rootdir
 1. Modify ignore_locations implementation to:
   * Maybe use .gitignore and other vcs available files?
   * Allow configuring this in Config?
@@ -36,7 +34,6 @@ Here's a list of things I need to remember to implement or think about:
 
 ## VCS
 
-1. Add support for File | Filter objects in git.add() implementation
 1. Check if can make vcs.add() return status='skipped' if no files were added? possible implementation would be:
   * `if hasattr(ctx.vcs, 'add'): return ctx.vcs.add() else ctx.run('add').flags(...)`
     this way, can rely on specific vcs implementations but they remain optional
@@ -45,6 +42,7 @@ Here's a list of things I need to remember to implement or think about:
 1. Think about the whole remote validation and setup? like, I want to use remote='smth' instead of 'origin'
 1. Add vcs.pr() task which will check if you have gh (or other client) installed and call them
 1. allow using stash for git, based on vcsconfig.non_disruption_strategy = 'stash' | 'worktree' ??
+1. Add support for File | Filter objects in git.add() implementation
 
 ## History
 

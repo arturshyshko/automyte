@@ -7,11 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.11] 2025-03-11
+
+## Added
+
+- v0.1.11 Add PathFilter for filtering files by folder or name
+
+## Changed
+
+- v0.1.11 Add validation for project dirs + allow passing "~/" (bde4649)
+
 ## [0.1.10] 2025-03-11
 
 ## Changed
 
-- v0.1.10 Allow passing plain folder URIs to projects section for automaton
+- v0.1.10 Allow passing plain folder URIs to projects section for automaton (27551b9)
 
 ## [0.1.9] 2025-03-11
 

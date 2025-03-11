@@ -1,6 +1,6 @@
 from .explorers import LocalFilesExplorer, ProjectExplorer
 from .file import File, OSFile
-from .filters import ContainsFilter, Filter
+from .filters import ContainsFilter, Filter, PathFilter
 
 __all__ = [
     "File",
@@ -9,4 +9,5 @@ __all__ = [
     "ContainsFilter",
     "OSFile",
     "ProjectExplorer",
+    "PathFilter",
 ]
