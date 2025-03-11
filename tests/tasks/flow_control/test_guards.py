@@ -22,45 +22,45 @@ class TestModeGuards:
 
 class TestHistoryGuards:
     def test_failed(self, run_ctx, tmp_os_file):
-        ctx: RunContext = run_ctx("smth")
-        ctx.previous_status = AutomatonRunResult("fail")
         file: OSFile = tmp_os_file("smth")
+        ctx: RunContext = run_ctx(file.folder)
+        ctx.previous_status = AutomatonRunResult("fail")
 
         assert guards.HISTORY.failed(ctx, file)
 
     def test_new(self, run_ctx, tmp_os_file):
-        ctx: RunContext = run_ctx("smth")
-        ctx.previous_status = AutomatonRunResult("new")
         file: OSFile = tmp_os_file("smth")
+        ctx: RunContext = run_ctx(file.folder)
+        ctx.previous_status = AutomatonRunResult("new")
 
         assert guards.HISTORY.new(ctx, file)
 
     def test_skipped(self, run_ctx, tmp_os_file):
-        ctx: RunContext = run_ctx("smth")
-        ctx.previous_status = AutomatonRunResult("skipped")
         file: OSFile = tmp_os_file("smth")
+        ctx: RunContext = run_ctx(file.folder)
+        ctx.previous_status = AutomatonRunResult("skipped")
 
         assert guards.HISTORY.skipped(ctx, file)
 
     def test_succeeded(self, run_ctx, tmp_os_file):
-        ctx: RunContext = run_ctx("smth")
-        ctx.previous_status = AutomatonRunResult("success")
         file: OSFile = tmp_os_file("smth")
+        ctx: RunContext = run_ctx(file.folder)
+        ctx.previous_status = AutomatonRunResult("success")
 
         assert guards.HISTORY.succeeded(ctx, file)
 
 
 class TestPreviousTaskGuards:
     def test_is_success(self, run_ctx, tmp_os_file):
-        ctx: RunContext = run_ctx("smth")
-        file: OSFile = tmp_os_file("smth")
+        file: OSFile = tmp_os_file("whatever")
+        ctx: RunContext = run_ctx(file.folder)
         ctx.save_task_result(result=TaskReturn(status="processed"), file=file)
 
         assert guards.PREVIOUS_TASK.is_success(ctx, file)
 
     def test_was_skipped(self, run_ctx, tmp_os_file):
-        ctx: RunContext = run_ctx("smth")
-        file: OSFile = tmp_os_file("smth")
+        file: OSFile = tmp_os_file("whatever")
+        ctx: RunContext = run_ctx(file.folder)
         ctx.save_task_result(result=TaskReturn(status="skipped"), file=file)
 
         assert guards.PREVIOUS_TASK.was_skipped(ctx, file)

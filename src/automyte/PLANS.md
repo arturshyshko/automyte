@@ -23,7 +23,6 @@ Here's a list of things I need to remember to implement or think about:
 1. Add preflight_check() function to Project which is to be ran for all projects during Automaton validation phase
 1. Filename or Folder filters implementation - think on combining or splitting + how to handle relative path inside project?
   * use relative_to() for folder filtering relative to rootdir
-1. Setup util for parsing rootdir in all places (so that we can replace "~" with expanduser())
 1. Modify ignore_locations implementation to:
   * Maybe use .gitignore and other vcs available files?
   * Allow configuring this in Config?

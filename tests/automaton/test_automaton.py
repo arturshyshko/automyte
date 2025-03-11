@@ -49,15 +49,17 @@ class TestAutomatonInit:
         assert flow.tasks[0] is dummy_task
         assert flow.tasks[1] is dummy_task
 
-    def test_generates_projects_from_uri(self):
+    def test_generates_projects_from_uri(self, tmp_local_project_factory):
+        dir1 = tmp_local_project_factory({})
+        dir2 = tmp_local_project_factory({})
         projects = Automaton(
             "auto",
-            projects=["/some/url", Project("proj1", rootdir="whatever")],
+            projects=[dir1, Project("proj1", rootdir=dir2)],
             tasks=[],
         ).projects
 
         assert len(projects) == 2
-        assert projects[0].rootdir == "/some/url"
+        assert projects[0].rootdir == dir1
 
 
 class TestAutomatonTargetting:
