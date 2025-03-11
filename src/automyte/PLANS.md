@@ -9,6 +9,8 @@ Here's a list of things I need to remember to implement or think about:
 1. add validation in automaton, to make sure all the props/tasks are correct and can be used together
   or maybe use the type guards feature in python?
 1. Check for any bash command error wherever they are called and handle an error? Raise exception?
+1. Add util for reading paths from a separate file?
+  * Useful for when ran across different machines by multiple people.
 1. Add WithFlagsMixin class that would implement following stuff:
   * .flags(*flags) method
   * self.flags.extend(*flags) setup
@@ -21,11 +23,7 @@ Here's a list of things I need to remember to implement or think about:
 1. Add preflight_check() function to Project which is to be ran for all projects during Automaton validation phase
 1. Filename or Folder filters implementation - think on combining or splitting + how to handle relative path inside project?
   * use relative_to() for folder filtering relative to rootdir
-1. Allow passing plain path to the project as initializer in automaton
-  * Add `Project.from_uri()` method which will accept it and see if it's local filesystem or github or smth
-  in that case - can create projects with default settings based if local fs, cloud, etc.
-  * In such case, `project_id` will be formed as `<project_folder_last_leaf>_<hash_of_everything_else>`.
-  With this implementation, can make project_id optional
+1. Setup util for parsing rootdir in all places (so that we can replace "~" with expanduser())
 1. Modify ignore_locations implementation to:
   * Maybe use .gitignore and other vcs available files?
   * Allow configuring this in Config?

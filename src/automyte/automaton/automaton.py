@@ -2,7 +2,7 @@ import typing as t
 
 from automyte.config import Config
 from automyte.history import AutomatonRunResult, History, InMemoryHistory
-from automyte.project import Project
+from automyte.project import Project, ProjectURI
 
 from .flow import TasksFlow
 from .run_context import RunContext
@@ -13,7 +13,7 @@ class Automaton:
     def __init__(
         self,
         name: str,
-        projects: list[Project],
+        projects: list[Project | ProjectURI],
         tasks: TasksFlow | list[FileTask],
         config: Config | None = None,
         history: History | None = None,
@@ -21,7 +21,13 @@ class Automaton:
         self.name = name
         self.config: Config = config or Config.get_default()
         self.history: History = history or InMemoryHistory()
-        self.projects = projects
+
+        self.projects = []
+        for project in projects:
+            if isinstance(project, str):
+                self.projects.append(Project.from_uri(project))
+            else:
+                self.projects.append(project)
 
         if isinstance(tasks, TasksFlow):
             self.flow = tasks

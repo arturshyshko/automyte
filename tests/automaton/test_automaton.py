@@ -49,6 +49,16 @@ class TestAutomatonInit:
         assert flow.tasks[0] is dummy_task
         assert flow.tasks[1] is dummy_task
 
+    def test_generates_projects_from_uri(self):
+        projects = Automaton(
+            "auto",
+            projects=["/some/url", Project("proj1", rootdir="whatever")],
+            tasks=[],
+        ).projects
+
+        assert len(projects) == 2
+        assert projects[0].rootdir == "/some/url"
+
 
 class TestAutomatonTargetting:
     @pytest.mark.parametrize(

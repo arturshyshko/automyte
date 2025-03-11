@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.10] 2025-03-11
+
+## Changed
+
+- v0.1.10 Allow passing plain folder URIs to projects section for automaton
+
 ## [0.1.9] 2025-03-11
 
 ## Added
 
-- v0.1.9 Add `ignorable_locations` to local files explorer
+- v0.1.9 Add `ignorable_locations` to local files explorer (3d9511e)
 - v0.1.9 Add initial simplest example test (5e444ae)
 - v0.1.9 Add `fs.flush()` util task (811e0b8)
 

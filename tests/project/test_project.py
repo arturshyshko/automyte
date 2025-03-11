@@ -1,4 +1,5 @@
 import contextlib
+from unittest.mock import patch
 
 import pytest
 
@@ -89,3 +90,20 @@ class TestProjectInWorkingState:
         with project.in_working_state(Config.get_default()):
             assert project.explorer.get_rootdir() == "newdir"
         assert project.explorer.get_rootdir() == "smth"
+
+
+class TestProjectFromUri:
+    def test_generates_correct_rootdir(self):
+        assert Project.from_uri("/home/projects/example").rootdir == "/home/projects/example"
+
+    def test_generates_unique_but_readable_project_id(self):
+        with patch("automyte.project.project.random_hash", return_value="smth"):
+            project = Project.from_uri("/home/projects/example")
+
+            assert project.project_id == "smth_example"
+
+    def test_sets_correct_explorer(self):
+        explorer = Project.from_uri("/home/projects/example").explorer
+
+        assert isinstance(explorer, LocalFilesExplorer)
+        assert explorer.get_rootdir() == "/home/projects/example"

@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import contextlib
 import typing as t
+from pathlib import Path
+from urllib.parse import urlparse
 
 from automyte.config import Config
 from automyte.discovery import LocalFilesExplorer, ProjectExplorer
+from automyte.utils.random import random_hash
 from automyte.vcs import VCS, Git
 
 
@@ -41,3 +46,18 @@ class Project:
 
     def apply_changes(self):
         self.explorer.flush()
+
+    @classmethod
+    def from_uri(cls, uri: str) -> "Project":
+        parsed_uri = urlparse(uri)
+        # TODO: Add processing for file:///... schema
+        if not parsed_uri.scheme:
+            path = Path(uri)
+            if not path.is_dir():
+                raise ValueError(f"Received invalid directory as a project dir: {uri}.")
+
+            project_id = f"{random_hash(str(path.parent))}_{path.name}"
+
+            return cls(rootdir=str(path), project_id=project_id)
+        else:
+            raise NotImplementedError("Cloud path or 'file:///...' is not available yet.")

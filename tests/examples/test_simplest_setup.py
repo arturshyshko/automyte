@@ -21,11 +21,11 @@ def test_simplest_setup(tmp_git_repo):
     def remove_redundant_is_true_comparisons(ctx: RunContext, file: File):
         file.edit(re.sub(r"if (\w+) is True:", r"if \1:", file.get_contents()))
 
-    dir = tmp_git_repo({"src": {"some_python_file.py": file_contents}})
+    directory = tmp_git_repo({"src": {"some_python_file.py": file_contents}})
 
     Automaton(
         name="simplest_case",
-        projects=[Project("project1", rootdir=dir)],
+        projects=[directory],
         tasks=[
             remove_redundant_is_true_comparisons,
             fs.flush(),
@@ -34,6 +34,6 @@ def test_simplest_setup(tmp_git_repo):
         ],
     ).run()
 
-    bash.execute(["git", "-C", dir, "checkout", "automate"])
-    with open(f"{dir}/src/some_python_file.py", "r") as proj1_file:
+    bash.execute(["git", "-C", directory, "checkout", "automate"])
+    with open(f"{directory}/src/some_python_file.py", "r") as proj1_file:
         assert proj1_file.read() == expected_new_contents
