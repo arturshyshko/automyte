@@ -20,14 +20,15 @@ Here's a list of things I need to remember to implement or think about:
 1. Add create() function in File interface + implement in OSFile
 1. Add preflight_check() function to Project which is to be ran for all projects during Automaton validation phase
 1. Filename or Folder filters implementation - think on combining or splitting + how to handle relative path inside project?
+  * use relative_to() for folder filtering relative to rootdir
 1. Allow passing plain path to the project as initializer in automaton
   * Add `Project.from_uri()` method which will accept it and see if it's local filesystem or github or smth
   in that case - can create projects with default settings based if local fs, cloud, etc.
   * In such case, `project_id` will be formed as `<project_folder_last_leaf>_<hash_of_everything_else>`.
   With this implementation, can make project_id optional
-1. By default, add `ignore_locations` to LocalFilesExplorer() which would remove .git, node_modules, etc
+1. Modify ignore_locations implementation to:
   * Maybe use .gitignore and other vcs available files?
-  * Probably a good idea not to add default filters for this but also allow to opt_out of this via config
+  * Allow configuring this in Config?
 
 ## Config
 

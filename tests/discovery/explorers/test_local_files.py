@@ -83,3 +83,22 @@ class TestLocalFilesExplorerFlush:
 
         with open(f"{dir}/upper/inner/nested.py", "r") as nested_file:
             assert nested_file.read() == "print(123)"
+
+
+class TestLocalFilesExplorerIgnoreUtilFiles:
+    def test_ignores_files_by_default(self, tmp_git_repo):
+        dir = tmp_git_repo({"src": {"hello.txt": "hello there", "node_modules": {"bun.txt": "rabbit"}}})
+
+        files = list(LocalFilesExplorer(rootdir=dir).explore())
+
+        assert len(files) == 1
+        assert files[0].name == "hello.txt"
+
+    def test_ignore_can_be_turned_off(self, tmp_git_repo):
+        dir = tmp_git_repo({"src": {"hello.txt": "hello there", "node_modules": {"bun.txt": "rabbit"}}})
+
+        files = list(LocalFilesExplorer(rootdir=dir, ignore_locations=[]).explore())
+
+        assert len(files) > 1
+        assert next(f for f in files if f.name == "bun.txt")
+        assert next(f for f in files if ".git" in f.folder)

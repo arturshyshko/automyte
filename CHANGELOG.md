@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9] 2025-03-11
+
+## Added
+
+- v0.1.9 Add `ignorable_locations` to local files explorer
+- v0.1.9 Add initial simplest example test (5e444ae)
+- v0.1.9 Add `fs.flush()` util task (811e0b8)
+
 ## [0.1.8] 2025-03-07
 
 ### Changed
