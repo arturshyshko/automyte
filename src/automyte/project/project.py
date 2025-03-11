@@ -15,7 +15,7 @@ from automyte.vcs import VCS, Git
 class Project:
     def __init__(
         self,
-        project_id: str,
+        project_id: str | None = None,
         rootdir: str | None = None,
         explorer: ProjectExplorer | None = None,
         vcs: VCS | None = None,
@@ -25,10 +25,15 @@ class Project:
         if rootdir:
             rootdir = str(parse_dir(rootdir))
 
-        self.project_id = project_id
         self.explorer = explorer or LocalFilesExplorer(rootdir=t.cast(str, rootdir))
         self.rootdir = rootdir or self.explorer.get_rootdir()
         self.vcs = vcs or Git(rootdir=self.rootdir)
+
+        if not project_id:
+            dir = Path(self.rootdir).resolve()
+            self.project_id = project_id or f"{random_hash(str(dir.parent))}_{dir.name}"
+        else:
+            self.project_id = project_id
 
     @contextlib.contextmanager
     def in_working_state(self, config: Config):
