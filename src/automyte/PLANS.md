@@ -6,9 +6,6 @@ Here's a list of things I need to remember to implement or think about:
 
 1. Implement logging config + add and setup log messages everywhere.
 1. Implement handling of random stuff (like if target_id is not present in projects)
-1. add validation in automaton, to make sure all the props/tasks are correct and can be used together
-  or maybe use the type guards feature in python?
-1. Check for any bash command error wherever they are called and handle an error? Raise exception?
 1. Add util for reading paths from a separate file?
   * Useful for when ran across different machines by multiple people.
 1. Maybe update WithFlagsMixin class that would implement following stuff?
@@ -18,7 +15,6 @@ Here's a list of things I need to remember to implement or think about:
 ## Project,ProjectExplorer,Files,Filters
 
 1. Add create() function in File interface + implement in OSFile
-1. Add preflight_check() function to Project which is to be ran for all projects during Automaton validation phase
 1. Modify ignore_locations implementation to:
   * Maybe use .gitignore and other vcs available files?
   * Allow configuring this in Config?

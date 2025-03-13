@@ -100,7 +100,7 @@ class TestAutomatonTargetting:
                 Project("custom_id", explorer=DummyExplorer(), vcs=DummyVCS()),
             ],
             tasks=TasksFlow(postprocess=[mark_project]),
-        ).run()
+        ).run(skip_validation=True)
 
         assert sorted(ran_for) == sorted(expected_projects)
 
@@ -116,7 +116,7 @@ class TestAutomatonTargetting:
             config=config,
             projects=[Project("somecustomid", explorer=DummyExplorer(), vcs=DummyVCS())],
             tasks=TasksFlow(postprocess=[mark_project]),
-        ).run()
+        ).run(skip_validation=True)
 
         assert ran_for == ["somecustomid"]
 
@@ -131,7 +131,7 @@ class TestAutomatonUpdatesHistory:
             history=history,
             projects=[Project("proj1", explorer=DummyExplorer(), vcs=DummyVCS())],
             tasks=[successful_task],
-        ).run()
+        ).run(skip_validation=True)
 
         assert history.get_status("auto", "proj1").status == "success"
 
@@ -146,6 +146,6 @@ class TestAutomatonUpdatesHistory:
             history=history,
             projects=[Project("proj1", explorer=DummyExplorer(), vcs=DummyVCS())],
             tasks=[failed_task],
-        ).run()
+        ).run(skip_validation=True)
 
         assert history.get_status("auto", "proj1") == AutomatonRunResult(status="fail", error="oops")

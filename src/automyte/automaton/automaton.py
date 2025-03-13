@@ -22,7 +22,7 @@ class Automaton:
         self.config: Config = config or Config.get_default()
         self.history: History = history or InMemoryHistory()
 
-        self.projects = []
+        self.projects: list[Project] = []
         for project in projects:
             if isinstance(project, str):
                 self.projects.append(Project.from_uri(project))
@@ -34,7 +34,10 @@ class Automaton:
         else:
             self.flow = TasksFlow(*tasks)
 
-    def run(self):
+    def run(self, skip_validation: bool = False):
+        self.setup(config=self.config)
+        self.validate(skip_validation)
+
         for project in self._get_target_projects():
             result = AutomatonRunResult(status="running")
             previous_result = self.history.get_status(self.name, project.project_id)
@@ -97,3 +100,21 @@ class Automaton:
 
     def _update_history(self, project: Project, result: AutomatonRunResult):
         self.history.set_status(automaton_name=self.name, project_id=project.project_id, status=result)
+
+    def setup(self, config: Config):
+        for project in self.projects:
+            project.setup(config=config)
+
+    def validate(self, skip_validation: bool):
+        if skip_validation:
+            return True
+
+        valid_targets = ("all", "new", "successful", "failed", "skipped")
+        if self.config.target not in valid_targets:
+            if not any(p for p in self.projects if p.project_id == self.config.target):
+                raise ValueError(
+                    f"Invalid target: {self.config.target}; Use either a valid project_id or any of {valid_targets}."
+                )
+
+        for project in self.projects:
+            project.run_validations()

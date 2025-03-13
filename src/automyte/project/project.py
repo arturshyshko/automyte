@@ -55,6 +55,17 @@ class Project:
     def apply_changes(self):
         self.explorer.flush()
 
+    def setup(self, config: Config):
+        """Finalize any leftover setup, with access to full config, which is not available during init phase.
+
+        Should only be called befure the actual run happens, as it will mess up with working_state.
+        """
+        self.rootdir = str(Path(self.rootdir).expanduser())
+        self.explorer.set_rootdir(self.rootdir)
+
+    def run_validations(self):
+        parse_dir(self.rootdir)  # Will raise if dir does not exist.
+
     @classmethod
     def from_uri(cls, uri: str) -> "Project":
         parsed_uri = urlparse(uri)
