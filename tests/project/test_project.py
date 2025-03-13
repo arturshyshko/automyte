@@ -1,5 +1,4 @@
 import contextlib
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -38,12 +37,11 @@ class TestProjectInit:
         with pytest.raises(ValueError):
             Project(project_id="proj1", vcs=Git(""))
 
-    def test_uses_local_files_explorer_by_default(self, tmp_local_project):
-        dir = tmp_local_project({})
-        explorer = Project("proj1", rootdir=dir).explorer
+    def test_uses_local_files_explorer_by_default(self):
+        explorer = Project("proj1", rootdir="customdir").explorer
 
         assert isinstance(explorer, LocalFilesExplorer)
-        assert explorer.get_rootdir() == dir
+        assert explorer.get_rootdir() == "customdir"
 
     def test_assigns_roodir_from_explorer_if_no_rootdir_is_passed_in_init(self):
         explorer = DummyExplorer()
@@ -52,16 +50,11 @@ class TestProjectInit:
 
         assert proj.rootdir == "smth"
 
-    def test_uses_git_vcs_with_correct_rootdir_by_default(self, tmp_local_project):
-        dir = tmp_local_project({})
-        vcs = Project(project_id="proj1", rootdir=dir).vcs
+    def test_uses_git_vcs_with_correct_rootdir_by_default(self):
+        vcs = Project(project_id="proj1", rootdir="smth").vcs
 
         assert isinstance(vcs, Git)
-        assert vcs.original_rootdir == dir
-
-    def test_validates_rootdir(self):
-        with pytest.raises(ValueError):
-            Project("proj1", rootdir="/some/definitely/not/existant/dir")
+        assert vcs.original_rootdir == "smth"
 
 
 class TestProjectApplyChanges:
@@ -74,49 +67,43 @@ class TestProjectApplyChanges:
 
 
 class TestProjectInWorkingState:
-    def test_calls_vcs_preserve_state(self, tmp_local_project):
-        dir = tmp_local_project({})
+    def test_calls_vcs_preserve_state(self):
         vcs = DummyVCS()
 
-        with Project("proj1", rootdir=dir, vcs=vcs).in_working_state(Config.get_default()):
+        with Project("proj1", rootdir="smth", vcs=vcs).in_working_state(Config.get_default()):
             ...
 
         assert vcs.preserve_state_called
 
-    def test_sets_and_resets_own_rootdir_if_necessary(self, tmp_local_project):
-        dir = tmp_local_project({})
+    def test_sets_and_resets_own_rootdir_if_necessary(self):
         vcs = DummyVCS()
-        project = Project("proj1", rootdir=dir, vcs=vcs)
+        project = Project("proj1", rootdir="smth", vcs=vcs)
 
         with project.in_working_state(Config.get_default()):
             assert project.rootdir == "newdir"
-        assert project.rootdir == dir
+        assert project.rootdir == "smth"
 
-    def test_updates_explorer_rootdir(self, tmp_local_project):
-        dir = tmp_local_project({})
+    def test_updates_explorer_rootdir(self):
         vcs = DummyVCS()
-        project = Project("proj1", rootdir=dir, vcs=vcs)
+        project = Project("proj1", rootdir="smth", vcs=vcs)
 
         with project.in_working_state(Config.get_default()):
             assert project.explorer.get_rootdir() == "newdir"
-        assert project.explorer.get_rootdir() == dir
+        assert project.explorer.get_rootdir() == "smth"
 
 
 class TestProjectFromUri:
-    def test_generates_correct_rootdir(self, tmp_local_project):
-        dir = tmp_local_project({})
-        assert Project.from_uri(dir).rootdir == dir
+    def test_generates_correct_rootdir(self):
+        assert Project.from_uri("/home/projects/example").rootdir == "/home/projects/example"
 
-    def test_generates_unique_but_readable_project_id(self, tmp_local_project):
-        dir = tmp_local_project({})
+    def test_generates_unique_but_readable_project_id(self):
         with patch("automyte.project.project.random_hash", return_value="smth"):
-            project = Project.from_uri(dir)
+            project = Project.from_uri("/home/projects/example")
 
-            assert project.project_id == f"smth_{Path(dir).name}"
+            assert project.project_id == "smth_example"
 
-    def test_sets_correct_explorer(self, tmp_local_project):
-        dir = tmp_local_project({})
-        explorer = Project.from_uri(dir).explorer
+    def test_sets_correct_explorer(self):
+        explorer = Project.from_uri("/home/projects/example").explorer
 
         assert isinstance(explorer, LocalFilesExplorer)
-        assert explorer.get_rootdir() == dir
+        assert explorer.get_rootdir() == "/home/projects/example"

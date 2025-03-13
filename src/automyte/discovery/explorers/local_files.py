@@ -3,8 +3,6 @@ import os
 import typing as t
 from pathlib import Path
 
-from automyte.utils.filesystem import parse_dir
-
 from ..file import File, OSFile
 from ..filters import Filter
 from .base import ProjectExplorer
@@ -24,7 +22,6 @@ class LocalFilesExplorer(ProjectExplorer):
         filter_by: Filter | None = None,
         ignore_locations: list[str] = IGNORE_FILES_LIST_PATTERNS,
     ):
-        rootdir = str(parse_dir(rootdir))
         self.rootdir = rootdir
         self.filter_by = filter_by
         self._changed_files: list[OSFile] = []

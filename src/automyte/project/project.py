@@ -22,8 +22,6 @@ class Project:
     ):
         if not rootdir and not explorer:
             raise ValueError("Need to supply at least one of: rootdir | explorer")
-        if rootdir:
-            rootdir = str(parse_dir(rootdir))
 
         self.explorer = explorer or LocalFilesExplorer(rootdir=t.cast(str, rootdir))
         self.rootdir = rootdir or self.explorer.get_rootdir()
@@ -71,7 +69,7 @@ class Project:
         parsed_uri = urlparse(uri)
         # TODO: Add processing for file:///... schema
         if not parsed_uri.scheme:
-            path = parse_dir(uri)
+            path = Path(uri)
             project_id = f"{random_hash(str(path.parent))}_{path.name}"
             return cls(rootdir=str(path), project_id=project_id)
 
