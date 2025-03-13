@@ -1,3 +1,4 @@
+from . import flow_control as flow
 from . import vcs
 from .flow_control import conditionals, guards
 from .utils import Breakpoint, fs
@@ -8,4 +9,5 @@ __all__ = [
     "guards",
     "fs",
     "vcs",
+    "flow",
 ]
