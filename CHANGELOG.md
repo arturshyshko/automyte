@@ -7,11 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] 2025-03-13
+
+## Added
+
+- v0.1.12 Add IgnoreResult flow tasks (5ce60d2)
+
+## Changed
+
+- v0.1.12 Combine RunIf and RunOn conditionals into one flow.If (0ed11d4)
+- v0.1.12 Set all vcs tasks to fail if bash.execute fails (8934250)
+- v0.1.12 Use mixin for adding .flags functionality to vcs tasks (a2010fa)
+
+## Fixed
+
+- v0.1.12 Generate default random project_id if it is not passed (df966a8)
+
 ## [0.1.11] 2025-03-11
 
 ## Added
 
-- v0.1.11 Add PathFilter for filtering files by folder or name
+- v0.1.11 Add PathFilter for filtering files by folder or name (90772c3)
 
 ## Changed
 

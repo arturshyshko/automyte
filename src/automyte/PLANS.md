@@ -11,11 +11,9 @@ Here's a list of things I need to remember to implement or think about:
 1. Check for any bash command error wherever they are called and handle an error? Raise exception?
 1. Add util for reading paths from a separate file?
   * Useful for when ran across different machines by multiple people.
-1. Add WithFlagsMixin class that would implement following stuff:
-  * .flags(*flags) method
-  * self.flags.extend(*flags) setup
+1. Maybe update WithFlagsMixin class that would implement following stuff?
   * if self.default_flags -> self.flags = self.default_flags + self.flags? need to think about this one more.
-  * Use it for vcs tasks and vcs and smth else?
+  * use it for VCS implementations?
 
 ## Project,ProjectExplorer,Files,Filters
 
