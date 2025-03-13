@@ -8,6 +8,7 @@ from pathlib import Path
 from automyte.config import VCSConfig
 from automyte.config.vcs import SupportedVCS
 from automyte.discovery import File, Filter
+from automyte.utils.bash import CMDOutput
 
 
 class VCSException(Exception):
@@ -32,7 +33,7 @@ class VCS(abc.ABC):
     def preserve_state(self, config: VCSConfig):
         raise NotImplementedError
 
-    def run(self, *subcommand_with_flags):
+    def run(self, *subcommand_with_flags) -> CMDOutput:
         raise NotImplementedError
 
 

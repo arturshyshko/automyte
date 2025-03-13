@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from automyte.automaton.run_context import RunContext
+from automyte.automaton.types import TaskReturn
 from automyte.discovery import OSFile
 from automyte.tasks import vcs
 from automyte.utils import bash
@@ -34,6 +35,17 @@ class TestVCSTaskAdd:
 
         staged_files_diff = bash.execute(["git", "-C", dir, "diff", "--name-only", "--cached"]).output
         assert "src/hello.txt" not in staged_files_diff
+
+    def test_aborts_on_fail(self, tmp_git_repo, run_ctx):
+        dir = tmp_git_repo(
+            initial_structure={"src": {"hello.txt": "hello vcs task"}},
+            unstaged_structure={"src": {"hello.txt": "hello new commit"}},
+        )
+        ctx = run_ctx(dir=dir)
+        file = OSFile(fullname=f"{dir}/src/hello.txt")
+        with patch("automyte.utils.bash.execute", return_value=bash.CMDOutput(status="fail", output="oops")):
+            result = vcs.add("src")(ctx, file)
+            assert result == TaskReturn(instruction="abort", status="errored", value="oops")
 
 
 class TestVCSTaskCommit:
@@ -80,6 +92,17 @@ class TestVCSTaskCommit:
         changed_files = bash.execute(["git", "-C", dir, "log", "-1", "--pretty=format:", "--name-only"]).output
         assert "hello.txt" in changed_files
 
+    def test_aborts_on_fail(self, tmp_git_repo, run_ctx):
+        dir = tmp_git_repo(
+            initial_structure={"src": {"hello.txt": "hello vcs task"}},
+            unstaged_structure={"src": {"hello.txt": "hello new commit"}},
+        )
+        ctx = run_ctx(dir=dir)
+        file = OSFile(fullname=f"{dir}/src/hello.txt")
+        with patch("automyte.utils.bash.execute", return_value=bash.CMDOutput(status="fail", output="oops")):
+            result = vcs.commit("failure")(ctx, file)
+            assert result == TaskReturn(instruction="abort", status="errored", value="oops")
+
 
 class TestVCSTaskPush:
     def test_calls_correct_cmd_for_git_vcs(self, tmp_git_repo, run_ctx):
@@ -94,6 +117,17 @@ class TestVCSTaskPush:
             vcs.push(to="automyte123123123")(ctx, file)
             mock_execute.assert_called_once_with(["git", "-C", dir, "push", "origin", "automyte123123123"])
 
+    def test_aborts_on_fail(self, tmp_git_repo, run_ctx):
+        dir = tmp_git_repo(
+            initial_structure={"src": {"hello.txt": "hello vcs task"}},
+            unstaged_structure={"src": {"hello.txt": "hello new commit"}},
+        )
+        ctx = run_ctx(dir=dir)
+        file = OSFile(fullname=f"{dir}/src/hello.txt")
+        with patch("automyte.utils.bash.execute", return_value=bash.CMDOutput(status="fail", output="oops")):
+            result = vcs.push(to="sad")(ctx, file)
+            assert result == TaskReturn(instruction="abort", status="errored", value="oops")
+
     def test_properly_adds_command_flags_for_git_vcs(self, tmp_git_repo, run_ctx):
         dir = tmp_git_repo(
             initial_structure={"src": {"hello.txt": "hello vcs task"}},
@@ -107,3 +141,7 @@ class TestVCSTaskPush:
             mock_execute.assert_called_once_with(
                 ["git", "-C", dir, "push", "--force-with-lease", "origin", "automyte123123123"]
             )
+
+
+# TODO: I am not sure how to test it properly.
+class TestVCSTaskPull: ...

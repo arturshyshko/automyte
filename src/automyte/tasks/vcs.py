@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from automyte.automaton.run_context import RunContext
+from automyte.automaton.types import TaskReturn
 from automyte.discovery import File
 
 
@@ -31,7 +32,12 @@ class add(VCSTask):
             self.paths = paths
 
     def __call__(self, ctx: RunContext, file: File | None = None):
-        ctx.vcs.run("add", "--", *[str(p) for p in self.paths], *self._flags)
+        result = ctx.vcs.run("add", "--", *[str(p) for p in self.paths], *self._flags)
+
+        if result.status == "fail":
+            return TaskReturn(status="errored", instruction="abort", value=result.output)
+        else:
+            return TaskReturn(status="processed", instruction="continue", value=result.output)
 
 
 class commit(VCSTask):
@@ -40,7 +46,12 @@ class commit(VCSTask):
         self.msg = msg
 
     def __call__(self, ctx: RunContext, file: File | None = None):
-        ctx.vcs.run("commit", "-m", self.msg, *self._flags)
+        result = ctx.vcs.run("commit", "-m", self.msg, *self._flags)
+
+        if result.status == "fail":
+            return TaskReturn(status="errored", instruction="abort", value=result.output)
+        else:
+            return TaskReturn(status="processed", instruction="continue", value=result.output)
 
 
 class push(VCSTask):
@@ -50,4 +61,24 @@ class push(VCSTask):
         self.remote = remote
 
     def __call__(self, ctx: RunContext, file: File | None = None):
-        ctx.vcs.run("push", *self._flags, self.remote, self.to)
+        result = ctx.vcs.run("push", *self._flags, self.remote, self.to)
+
+        if result.status == "fail":
+            return TaskReturn(status="errored", instruction="abort", value=result.output)
+        else:
+            return TaskReturn(status="processed", instruction="continue", value=result.output)
+
+
+class pull(VCSTask):
+    def __init__(self, branch: str, remote: str = "origin"):
+        super().__init__()
+        self.branch = branch
+        self.remote = remote
+
+    def __call__(self, ctx: RunContext, file: File | None = None):
+        result = ctx.vcs.run("pull", *self._flags, self.remote, self.branch)
+
+        if result.status == "fail":
+            return TaskReturn(status="errored", instruction="abort", value=result.output)
+        else:
+            return TaskReturn(status="processed", instruction="continue", value=result.output)
