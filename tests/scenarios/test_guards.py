@@ -10,6 +10,7 @@ from automyte import (
     RunContext,
     TasksFlow,
     conditionals,
+    flow,
     guards,
 )
 
@@ -35,12 +36,7 @@ def test_guards_simple(tmp_local_project):
         ],
         tasks=TasksFlow(
             [
-                conditionals.RunOn(
-                    lol,
-                    lol,
-                    lol,
-                    on=guards.MODE.amend,
-                ),
+                flow.If(lol, lol, lol, check=guards.MODE.amend),
             ]
         ),
     ).run()

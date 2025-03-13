@@ -57,12 +57,6 @@ Here's a list of things I need to remember to implement or think about:
 
 ## Tasks
 
-1. RunOn, RunIf upgrades:
-  * Combine them together, just accept 2 params (either callable or condition)
-  * Think about renaming it into flow.If(...) for better interface
-  * I will definitely add the `ActOn` guard to add filtering per file and reuse filters from discovery
-  * Maybe combine that ActOn with previous flow.If filter? so flow.If((condition | check) & filter)
-1. Rename flow_control into just flow
 1. Allow for `initializers` section in TasksFlow, which runs even before in_working_state()?? Treat with CAUTION!
 1. Think on allowing to setup post/pre tasks in array form of TasksFlow automaton initialization?
   * Either plain python object syntax
@@ -85,6 +79,7 @@ Here's a list of things I need to remember to implement or think about:
 1. Check how to setup proper docs
   * the ones used for hatchling or maybe use backstage?
   * see if should use docstrings per class or separate docstring for contributors and separate docs for usage?
+  * Use https://github.com/mkdocs/mkdocs + github pages
 1. When writing docs for examples - for simplest case, remember saying:
   * "this simple example highlights couple of essential mechanics of automyte lib: ..."
   and mention the flushing() mechanics, etc.
