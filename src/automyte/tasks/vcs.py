@@ -6,16 +6,20 @@ from automyte.automaton.run_context import RunContext
 from automyte.discovery import File
 
 
-class VCSTask:
+class WithFlagsMixin:
+    _flags: list[str]
+
+    def flags(self, *args: str):
+        self._flags.extend(list(args))
+        return self
+
+
+class VCSTask(WithFlagsMixin):
     def __init__(self):
         self._flags: list[str] = []
 
     def __call__(self, ctx: RunContext, file: File | None = None):
         raise NotImplementedError
-
-    def flags(self, *args: str) -> "VCSTask":
-        self._flags.extend(list(args))
-        return self
 
 
 class add(VCSTask):
