@@ -1,7 +1,7 @@
 import re
 
 from automyte import Automaton, File, Project, RunContext, TasksFlow
-from automyte.tasks import flow, vcs
+from automyte.tasks import flow, guards, vcs
 from automyte.utils import bash
 
 file_contents = """
@@ -34,7 +34,10 @@ def test_tasks_flow_showcase(tmp_git_repo):
             ],
             postprocess=[
                 vcs.add("src"),
-                vcs.commit("Remove unnecessary 'is True' comparisons"),
+                flow.If(
+                    vcs.commit("Remove unnecessary 'is True' comparisons"),
+                    check=guards.PREVIOUS_TASK.is_success,
+                ),
             ],
         ),
     ).run()
