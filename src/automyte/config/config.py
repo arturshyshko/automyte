@@ -1,12 +1,22 @@
 import typing as t
 from dataclasses import dataclass
+from pathlib import Path
 
-from .vcs import SupportedVCS, VCSConfig
+import typing_extensions as te
+
+from .vcs import SupportedVCS, VCSConfig, VCSConfigParams
 
 RUN_MODES = t.Literal["run", "amend"]
 
 _ProjectID: t.TypeAlias = str
 AutomatonTarget: t.TypeAlias = t.Literal["all", "new", "successful", "failed", "skipped"] | _ProjectID
+
+
+class ConfigParams(t.TypedDict, total=False):
+    stop_on_fail: bool
+    target: AutomatonTarget
+    mode: RUN_MODES
+    vcs: VCSConfigParams
 
 
 @dataclass
@@ -17,15 +27,57 @@ class Config:
     target: AutomatonTarget = "all"
 
     @classmethod
-    def get_default(cls, **kwargs):
-        # TODO: Fix error when passing mode='run' in get_default kwargs and that gets multiple values for same arg.
-        return cls(
+    def setup(
+        cls,
+        config_file_path: str | Path = "./automyte.json",
+        config_overrides: ConfigParams | None = None,
+    ):
+        """
+        Set up configuration with the following precedence order:
+            1. Command line arguments (actually handled by cmd parser, we just get config_overrides)
+            2. Environment variables
+            3. Config file
+            4. Default values in class definition
+        """
+        config_values: ConfigParams = {}
+        config_values.update(cls._load_from_config_file(config_file_path))
+        config_values.update(cls._load_from_env())
+        config_values.update(cls._load_from_args(config_overrides=config_overrides))
+        config = cls.get_default(**config_values)
+
+        return config
+
+    @classmethod
+    def get_default(cls, **kwargs: te.Unpack[ConfigParams]):
+        defaults = ConfigParams(
             mode="run",
             stop_on_fail=True,
-            vcs=VCSConfig.get_default(),
-            **kwargs,
+        )
+        defaults.update(**kwargs)
+        vcs_defaults = defaults.pop("vcs", {})
+
+        return cls(
+            vcs=VCSConfig.get_default(**vcs_defaults),
+            **defaults,  # pyright: ignore
         )
 
     def set_vcs(self, **kwargs):
         self.vcs = VCSConfig.get_default(**kwargs)
         return self
+
+    # TODO: Implement
+    @classmethod
+    def _load_from_config_file(cls, config_file_path: str | Path = "./automyte.json"):
+        return {}
+
+    # TODO: Implement (read from metadata)
+    @classmethod
+    def _load_from_env(cls):
+        return {}
+
+    @classmethod
+    def _load_from_args(cls, config_overrides: ConfigParams | None = None):
+        if not config_overrides:
+            return {}
+
+        return config_overrides

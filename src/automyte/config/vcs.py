@@ -1,7 +1,17 @@
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+import typing_extensions as te
 
 SupportedVCS: t.TypeAlias = t.Literal["git"]
+
+
+class VCSConfigParams(t.TypedDict, total=False):
+    default_vcs: SupportedVCS
+    base_branch: str
+    work_branch: str
+    dont_disrupt_prior_state: bool
+    allow_publishing: bool
 
 
 @dataclass
@@ -12,10 +22,13 @@ class VCSConfig:
     dont_disrupt_prior_state: bool = True
 
     @classmethod
-    def get_default(cls, **kwargs):
-        kwargs.setdefault("default_vcs", "git")
-        kwargs.setdefault("main_branch", "master")
-        kwargs.setdefault("work_branch", "automate")
-        kwargs.setdefault("dont_disrupt_prior_state", True)
+    def get_default(cls, **kwargs: te.Unpack[VCSConfigParams]):
+        defaults = VCSConfigParams(
+            default_vcs="git",
+            base_branch="master",
+            work_branch="automate",
+            dont_disrupt_prior_state=True,
+        )
+        defaults.update(**kwargs)
 
-        return cls(**kwargs)
+        return cls(**defaults)

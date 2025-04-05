@@ -1,8 +1,10 @@
-from .config import Config
-from .vcs import SupportedVCS, VCSConfig
+from .config import Config, ConfigParams
+from .vcs import SupportedVCS, VCSConfig, VCSConfigParams
 
 __all__ = [
     "Config",
-    "VCSConfig",
+    "ConfigParams",
     "SupportedVCS",
+    "VCSConfig",
+    "VCSConfigParams",
 ]
