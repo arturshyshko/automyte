@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from automyte.automaton.run_context import RunContext
-from automyte.config.base import Config
+from automyte.config import Config
 from automyte.discovery import OSFile
 from automyte.history.types import AutomatonRunResult
 from automyte.project import Project

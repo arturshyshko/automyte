@@ -1,4 +1,4 @@
-from .base import Config
+from .config import Config
 from .vcs import SupportedVCS, VCSConfig
 
 __all__ = [

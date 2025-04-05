@@ -22,9 +22,16 @@ Here's a list of things I need to remember to implement or think about:
 ## Config
 
 1. Think about adding builder setup for Config class
+  * going to use setup similar to airflow conf.get() with argparse -> env -> config file -> defaults
+  * use field(metadata={'env_var': ..., 'description': ....})
 1. Implement typing for **kwargs for Config.get_default() (same for VCSConfig)
 1. Think about reading env vars for config?
 1. Think about global defaults for configs? Like, standard_worktree_path for VCS, default history file name, etc.
+1. What do I want to be able to configure:
+  * mode (run | amend), targets, default vcs, work_branch, stop_on_fail
+  * publish (create_pr) - probably set explicit check in vcs.publish() task or use TasksFlow.arrange() for adding publish if not added??
+  * amend_for: ['all', 'new', ...] - adjust mode based on project historical status? this might require reworking this config
+
 
 ## VCS
 
