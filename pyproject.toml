@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "automyte"
 description = "Tool for automation of code updates."
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 readme = "README.md"
 license = "MIT"
 authors = [
@@ -19,9 +19,9 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
 
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 
 [project.scripts]
@@ -34,7 +34,7 @@ automyte = "automyte:console_main"
 path = "src/automyte/__about__.py"
 
 [[tool.hatch.envs.hatch-test.matrix]]
-python = ["3.10", "3.11", "3.12"]
+python = ["3.11", "3.12", "3.13"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
