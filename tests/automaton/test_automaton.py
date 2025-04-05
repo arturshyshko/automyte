@@ -10,6 +10,7 @@ from automyte.discovery.file.os_file import OSFile
 from automyte.history.in_memory import InMemoryHistory
 from automyte.history.types import AutomatonRunResult
 from automyte.project.project import Project
+from automyte.utils.bash import CMDOutput
 from automyte.vcs import VCS
 
 
@@ -29,7 +30,7 @@ class DummyExplorer(ProjectExplorer):
 
 class DummyVCS(VCS):
     def run(self, *args):
-        return
+        return CMDOutput(status="success", output="")
 
     @contextlib.contextmanager
     def preserve_state(self, config):

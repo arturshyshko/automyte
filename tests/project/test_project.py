@@ -4,9 +4,10 @@ from unittest.mock import patch
 import pytest
 
 from automyte import Project
-from automyte.config.base import Config
+from automyte.config import Config
 from automyte.discovery.explorers.base import ProjectExplorer
 from automyte.discovery.explorers.local_files import LocalFilesExplorer
+from automyte.utils.bash import CMDOutput
 from automyte.vcs.base import VCS
 from automyte.vcs.git import Git
 
@@ -24,7 +25,7 @@ class DummyExplorer(ProjectExplorer):
 
 class DummyVCS(VCS):
     def run(self, *args):
-        return
+        return CMDOutput(status="success", output="")
 
     @contextlib.contextmanager
     def preserve_state(self, config):

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] 2025-04-06
+
+## Added
+
+- v0.1.13 Add setup & validation phase to automaton (fc7dcb3)
+- v0.1.13 Add separate config file for pyright (0bf7025)
+
+## Changed
+
+- v0.1.13 Shift supported python by +1 (497a827)
+- v0.1.13 Move main cli to root folder (7a51b07)
+
+## Fixed
+
+- v0.1.13 Fix tests (3868a99)
+
 ## [0.1.12] 2025-03-13
 
 ## Added
