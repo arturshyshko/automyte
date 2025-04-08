@@ -9,7 +9,8 @@ from .vcs import SupportedVCS, VCSConfig, VCSConfigParams
 RUN_MODES = t.Literal["run", "amend"]
 
 _ProjectID: t.TypeAlias = str
-AutomatonTarget: t.TypeAlias = t.Literal["all", "new", "successful", "failed", "skipped"] | _ProjectID
+_AutomatonTarget: t.TypeAlias = t.Literal["all", "new", "successful", "failed", "skipped"]
+AutomatonTarget: t.TypeAlias = _AutomatonTarget | _ProjectID
 
 
 class ConfigParams(t.TypedDict, total=False):
@@ -58,7 +59,7 @@ class Config:
 
         return cls(
             vcs=VCSConfig.get_default(**vcs_defaults),
-            **defaults,  # pyright: ignore
+            **defaults,  # pyright: ignore (vcs already assigned)
         )
 
     def set_vcs(self, **kwargs):

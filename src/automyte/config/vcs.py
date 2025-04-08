@@ -16,10 +16,11 @@ class VCSConfigParams(t.TypedDict, total=False):
 
 @dataclass
 class VCSConfig:
-    default_vcs: SupportedVCS
-    main_branch: str = "master"
+    default_vcs: SupportedVCS = "git"
+    base_branch: str = "master"
     work_branch: str = "automate"
     dont_disrupt_prior_state: bool = True
+    allow_publishing: bool = False
 
     @classmethod
     def get_default(cls, **kwargs: te.Unpack[VCSConfigParams]):
