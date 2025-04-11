@@ -20,7 +20,7 @@ class Config(FileConfigMixin):
     @classmethod
     def setup(
         cls,
-        config_file_path: str | Path = "./automyte.json",
+        config_file_path: str | Path = "./automyte.cfg",
         config_overrides: ConfigParams | None = None,
     ):
         """
@@ -56,10 +56,9 @@ class Config(FileConfigMixin):
         self.vcs = VCSConfig.get_default(**kwargs)
         return self
 
-    # TODO: Implement
     @classmethod
-    def _load_from_config_file(cls, config_file_path: str | Path = "./automyte.json"):
-        return {}
+    def _load_from_config_file(cls, config_file_path: str | Path = "./automyte.cfg") -> ConfigParams:
+        return cls.parse_config_file(Path(config_file_path).resolve())
 
     # TODO: Implement (read from metadata)
     @classmethod
