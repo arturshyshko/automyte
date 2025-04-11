@@ -1,31 +1,21 @@
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import typing_extensions as te
 
-from .vcs import SupportedVCS, VCSConfig, VCSConfigParams
-
-RUN_MODES = t.Literal["run", "amend"]
-
-_ProjectID: t.TypeAlias = str
-_AutomatonTarget: t.TypeAlias = t.Literal["all", "new", "successful", "failed", "skipped"]
-AutomatonTarget: t.TypeAlias = _AutomatonTarget | _ProjectID
-
-
-class ConfigParams(t.TypedDict, total=False):
-    stop_on_fail: bool
-    target: AutomatonTarget
-    mode: RUN_MODES
-    vcs: VCSConfigParams
+from . import fields as f
+from .builders import FileConfigMixin
+from .fields import RUN_MODES, AutomatonTarget, ConfigParams
+from .vcs import VCSConfig, VCSConfigParams
 
 
 @dataclass
-class Config:
-    mode: RUN_MODES
+class Config(FileConfigMixin):
+    mode: RUN_MODES = field(metadata=f.MODE.to_dict())
     vcs: VCSConfig
-    stop_on_fail: bool = True
-    target: AutomatonTarget = "all"
+    stop_on_fail: bool = field(default=True, metadata=f.STOP_ON_FAIL.to_dict())
+    target: AutomatonTarget = field(default="all", metadata=f.TARGET.to_dict())
 
     @classmethod
     def setup(

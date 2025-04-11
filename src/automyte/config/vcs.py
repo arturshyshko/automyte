@@ -3,24 +3,17 @@ from dataclasses import dataclass, field
 
 import typing_extensions as te
 
-SupportedVCS: t.TypeAlias = t.Literal["git"]
-
-
-class VCSConfigParams(t.TypedDict, total=False):
-    default_vcs: SupportedVCS
-    base_branch: str
-    work_branch: str
-    dont_disrupt_prior_state: bool
-    allow_publishing: bool
+from . import fields as f
+from .fields import SupportedVCS, VCSConfigParams
 
 
 @dataclass
 class VCSConfig:
-    default_vcs: SupportedVCS = "git"
-    base_branch: str = "master"
-    work_branch: str = "automate"
-    dont_disrupt_prior_state: bool = True
-    allow_publishing: bool = False
+    default_vcs: SupportedVCS = field(default="git", metadata=f.DEFAULT_VCS.to_dict())
+    base_branch: str = field(default="master", metadata=f.BASE_BRANCH.to_dict())
+    work_branch: str = field(default="automate", metadata=f.WORK_BRANCH.to_dict())
+    dont_disrupt_prior_state: bool = field(default=True, metadata=f.DONT_DISRUPT_PRIOR_STATE.to_dict())
+    allow_publishing: bool = field(default=False, metadata=f.ALLOW_PUBLISHING.to_dict())
 
     @classmethod
     def get_default(cls, **kwargs: te.Unpack[VCSConfigParams]):
