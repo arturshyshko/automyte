@@ -55,7 +55,13 @@ class ConfigField:
 #################################################################
 
 MODE = ConfigField(
-    name="mode", argnames=["-m", "--mode"], default_value=..., kind=RUN_MODES, description="", file_param="config.mode"
+    name="mode",
+    argnames=["-m", "--mode"],
+    default_value=...,
+    kind=RUN_MODES,
+    description="",
+    file_param="config.mode",
+    env_var="AUTOMYTE_MODE",
 )
 STOP_ON_FAIL = ConfigField(
     name="stop_on_fail",
@@ -64,6 +70,7 @@ STOP_ON_FAIL = ConfigField(
     kind=bool,
     description="",
     file_param="config.stop_on_fail",
+    env_var="AUTOMYTE_STOP_ON_FAIL",
 )
 TARGET = ConfigField(
     name="target",
@@ -72,6 +79,7 @@ TARGET = ConfigField(
     kind=AutomatonTarget | _ProjectID,
     description="",
     file_param="config.target",
+    env_var="AUTOMYTE_TARGET",
 )
 
 #################################################################
@@ -86,6 +94,7 @@ DEFAULT_VCS = ConfigField(
     kind=SupportedVCS,
     description="",
     file_param="vcs.default_vcs",
+    env_var="AUTOMYTE_DEFAULT_VCS",
 )
 BASE_BRANCH = ConfigField(
     field_of="vcs",
@@ -95,6 +104,7 @@ BASE_BRANCH = ConfigField(
     kind=str,
     description="",
     file_param="vcs.base_branch",
+    env_var="AUTOMYTE_BASE_BRANCH",
 )
 WORK_BRANCH = ConfigField(
     field_of="vcs",
@@ -104,6 +114,7 @@ WORK_BRANCH = ConfigField(
     kind=str,
     description="",
     file_param="vcs.work_branch",
+    env_var="AUTOMYTE_WORK_BRANCH",
 )
 DONT_DISRUPT_PRIOR_STATE = ConfigField(
     field_of="vcs",
@@ -113,6 +124,7 @@ DONT_DISRUPT_PRIOR_STATE = ConfigField(
     kind=bool,
     description="",
     file_param="vcs.dont_disrupt_prior_state",
+    env_var="AUTOMYTE_DONT_DISRUPT_PRIOR_STATE",
 )
 ALLOW_PUBLISHING = ConfigField(
     field_of="vcs",
@@ -122,6 +134,7 @@ ALLOW_PUBLISHING = ConfigField(
     kind=bool,
     description="",
     file_param="vcs.allow_publishing",
+    env_var="AUTOMYTE_ALLOW_PUBLISHING",
 )
 
 
