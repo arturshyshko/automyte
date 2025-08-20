@@ -1,0 +1,51 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Cancel running jobs for the same workflow and branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pypa/hatch@install
+      - name: Set up Python
+        run: hatch python install 3.13
+
+      - name: Run linting
+        run: hatch env run -e dev ruff check .
+
+  run-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pypa/hatch@install
+      - name: Set up Python
+        run: hatch python install 3.11 3.12 3.13
+
+      - name: Setup fake Git user for tests
+        run: |
+          git config --global user.email "test@test.com"
+          git config --global user.name "Test Test"
+
+      - name: Run tests
+        run: hatch test --all --parallel
