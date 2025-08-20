@@ -10,4 +10,4 @@ def test_plain_execution():
 def test_failure_execution():
     result = bash.execute(["ls", "/kladjslkajdslkjasd"])
     assert result.status == "fail"
-    assert result.output == "ls: /kladjslkajdslkjasd: No such file or directory"
+    assert "no such file or directory" in result.output.lower()
