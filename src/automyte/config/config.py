@@ -1,20 +1,16 @@
-import os
-import typing as t
-from dataclasses import Field, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import typing_extensions as te
 
-from automyte.utils.config import get_fields_to_process, get_typed_value
-
 from . import fields as f
-from .builders import FileConfigMixin
+from .builders import FileConfigMixin, EnvVarsConfigMixin
 from .fields import RUN_MODES, AutomatonTarget, ConfigParams
 from .vcs import VCSConfig
 
 
 @dataclass
-class Config(FileConfigMixin):
+class Config(FileConfigMixin, EnvVarsConfigMixin):
     mode: RUN_MODES = field(metadata=f.MODE.to_dict())
     vcs: VCSConfig
     stop_on_fail: bool = field(default=True, metadata=f.STOP_ON_FAIL.to_dict())
@@ -60,35 +56,12 @@ class Config(FileConfigMixin):
         return self
 
     @classmethod
-    def _load_from_config_file(
-        cls, config_file_path: str | Path = "./automyte.cfg"
-    ) -> ConfigParams:
+    def _load_from_config_file(cls, config_file_path: str | Path = "./automyte.cfg") -> ConfigParams:
         return cls.parse_config_file(Path(config_file_path).resolve())
 
     @classmethod
     def _load_from_env(cls) -> ConfigParams:
-        env_config = ConfigParams()
-        # get fields configurable via env_var including nested fields for vcs
-        fields_to_process: t.Sequence[Field] = get_fields_to_process(cls, "env_var")
-
-        for f in fields_to_process:
-            param = f.metadata.get("env_var", None)
-            kind = f.metadata.get("kind", str)
-            field_of = f.metadata.get("field_of", "config")
-            field_name = f.metadata.get("name", f.name)
-
-            value = get_typed_value(kind, os.getenv(param)) if param else None
-
-            # explicit checking for None as value can be False
-            if param and value is not None:
-                if field_of == "config":
-                    env_config[field_name] = value
-                else:
-                    if field_of not in env_config:
-                        env_config[field_of] = {}
-                    env_config[field_of][field_name] = value
-
-        return env_config
+        return cls.parse_env_vars()
 
     @classmethod
     def _load_from_args(cls, config_overrides: ConfigParams | None = None):

@@ -5,7 +5,6 @@ from automyte.config.fields import ConfigParams
 
 
 class TestConfigEnvVar:
-
     def test_should_read_config_from_env_var_for_single_value(self, monkeypatch):
         monkeypatch.setenv("AUTOMYTE_MODE", "run")
         expected_result = ConfigParams(mode="run")
@@ -24,7 +23,6 @@ class TestConfigEnvVar:
 
         assert result == expected_result
 
-    # test for vcs fields
     def test_should_read_config_from_env_var_for_vcs_fields(self, monkeypatch):
         monkeypatch.setenv("AUTOMYTE_DEFAULT_VCS", "git")
         monkeypatch.setenv("AUTOMYTE_BASE_BRANCH", "main")
@@ -41,7 +39,6 @@ class TestConfigEnvVar:
 
         assert result == expected_result
 
-    # test for both config and vcs fields
     def test_should_read_config_from_env_for_config_and_vcs_fields(self, monkeypatch):
         monkeypatch.setenv("AUTOMYTE_STOP_ON_FAIL", "false")
         monkeypatch.setenv("AUTOMYTE_BASE_BRANCH", "main")
