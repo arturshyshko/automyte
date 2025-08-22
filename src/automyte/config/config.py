@@ -1,17 +1,16 @@
-import typing as t
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import typing_extensions as te
 
 from . import fields as f
-from .builders import FileConfigMixin
+from .builders import FileConfigMixin, EnvVarsConfigMixin
 from .fields import RUN_MODES, AutomatonTarget, ConfigParams
-from .vcs import VCSConfig, VCSConfigParams
+from .vcs import VCSConfig
 
 
 @dataclass
-class Config(FileConfigMixin):
+class Config(FileConfigMixin, EnvVarsConfigMixin):
     mode: RUN_MODES = field(metadata=f.MODE.to_dict())
     vcs: VCSConfig
     stop_on_fail: bool = field(default=True, metadata=f.STOP_ON_FAIL.to_dict())
@@ -60,10 +59,9 @@ class Config(FileConfigMixin):
     def _load_from_config_file(cls, config_file_path: str | Path = "./automyte.cfg") -> ConfigParams:
         return cls.parse_config_file(Path(config_file_path).resolve())
 
-    # TODO: Implement (read from metadata)
     @classmethod
-    def _load_from_env(cls):
-        return {}
+    def _load_from_env(cls) -> ConfigParams:
+        return cls.parse_env_vars()
 
     @classmethod
     def _load_from_args(cls, config_overrides: ConfigParams | None = None):
