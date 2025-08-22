@@ -18,7 +18,7 @@ def test_create_new_file(tmp_git_repo):
         config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
         projects=[directory],
         tasks=[
-            fs.create(f"{directory}/src/some_python_file.py", file_contents),
+            fs.create("src/some_python_file.py", file_contents),
             vcs.add("src"),
             vcs.commit("Created new file."),
         ],
@@ -40,7 +40,7 @@ def test_create_new_file_in_worktree(tmp_git_repo):
         name="create_new_file_in_worktree",
         projects=[directory],
         tasks=[
-            fs.create(f"{directory}/src/some_python_file.py", file_contents),
+            fs.create("src/some_python_file.py", file_contents),
             vcs.add("src"),
             vcs.commit("Created new file."),
         ],

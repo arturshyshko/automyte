@@ -22,7 +22,7 @@ class TestFileSystemCreate:
         dir = tmp_local_project(structure={})
         ctx: RunContext = run_ctx(dir)
 
-        result = fs.create(f"{dir}/test/file.txt", "File Content")(ctx, None)
+        result = fs.create("test/file.txt", "File Content")(ctx, None)
 
         assert result.status == "processed"
         assert (Path(dir) / "test/file.txt").exists()
@@ -35,7 +35,7 @@ class TestFileSystemCreate:
         dir = tmp_local_project(structure={})
         ctx: RunContext = run_ctx(dir)
 
-        result = fs.create(Path(f"{dir}/test/file.txt"), "File Content")(ctx, None)
+        result = fs.create(Path("test/file.txt"), "File Content")(ctx, None)
 
         assert result.status == "processed"
         assert (Path(dir) / "test/file.txt").exists()
@@ -43,14 +43,3 @@ class TestFileSystemCreate:
         file: OSFile = result.value
         with open(file.fullpath, "r") as f:
             assert f.read() == "File Content"
-
-    def test_should_create_new_file_and_stage_it(self, run_ctx, tmp_git_repo):
-        dir = tmp_git_repo({})
-        ctx: RunContext = run_ctx(dir)
-
-        result = fs.create(f"{dir}/test/file.txt", "File Content")(ctx, None)
-
-        assert result.status == "processed"
-        vcs.add("test")(ctx, result.value)
-        staged_files_diff = bash.execute(["git", "-C", dir, "diff", "--name-only", "--cached"]).output
-        assert "test/file.txt" in staged_files_diff

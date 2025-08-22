@@ -64,3 +64,16 @@ class LocalFilesExplorer(ProjectExplorer):
                 return True
 
         return False
+
+    def add_file(self, path: Path, content: str) -> OSFile:
+        root_path = Path(self.rootdir).resolve()
+        path = root_path / path.resolve().relative_to(root_path)
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+
+        file = OSFile(fullname=str(path))
+        file.edit(content)
+        
+        return file
+    

@@ -21,3 +21,7 @@ class ProjectExplorer(abc.ABC):
     def flush(self):
         """Centralised hook to actually apply all necessary changes for all files that require it."""
         raise NotImplementedError
+
+    def add_file(self, path, content):
+        """To be overriden by child classes to provide implementation to create a new file"""
+        raise NotImplementedError
