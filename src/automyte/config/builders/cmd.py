@@ -1,12 +1,13 @@
 import argparse
+from dataclasses import dataclass
+import os
 import typing as t
 from argparse import ArgumentParser
 from collections import defaultdict
 
-from automyte.config.fields import ConfigField
-
-from .config import Config, ConfigParams
-from .vcs import VCSConfig
+from automyte.config.builders.metadata_parser import ConfigMetadataParser
+from automyte.config.fields import ConfigField, ConfigParams
+from .. import fields as f
 
 
 def str_to_bool(value: str) -> bool:
@@ -65,3 +66,21 @@ def get_config_params_from_argv(supported_fields: t.Sequence[ConfigField]) -> Co
             result[k] = v
 
     return result  # pyright: ignore
+
+
+@dataclass
+class CmdArgsMixin:
+    @classmethod
+    def get_config_from_args(cls, config_overrides: ConfigParams | None = None) -> ConfigParams:
+        is_cli = os.getenv("AUTOMYTE_READ_CMD_ARGS")
+        if is_cli != "true":
+            return config_overrides or {}
+
+        fields_to_process = ConfigMetadataParser.get_fields_to_process(cls, "argnames")
+        result = get_config_params_from_argv(
+            supported_fields=ConfigMetadataParser.get_config_fields_from_fields(fields_to_process)
+        )
+        if not config_overrides:
+            return result
+
+        return {**result, **config_overrides}

@@ -51,12 +51,15 @@ class FileConfigMixin:
             field_name = field.metadata.get("name", field.name)
             kind = field.metadata.get("kind", str)
 
-            if kind is bool:
-                value = cfg.getboolean(section, param_name)
-            elif kind is int:
-                value = cfg.getint(section, param_name)
-            else:
-                value = cfg.get(section, param_name)
+            try:
+                if kind is bool:
+                    value = cfg.getboolean(section, param_name)
+                elif kind is int:
+                    value = cfg.getint(section, param_name)
+                else:
+                    value = cfg.get(section, param_name)
+            except configparser.NoOptionError:
+                continue
 
             if field_of == "config":
                 overrides[field_name] = value

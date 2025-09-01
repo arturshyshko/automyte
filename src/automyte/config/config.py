@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-
 import typing_extensions as te
 
+from automyte.config.builders.cmd import CmdArgsMixin
 from . import fields as f
 from .builders import FileConfigMixin, EnvVarsConfigMixin
 from .fields import RUN_MODES, AutomatonTarget, ConfigParams
@@ -10,7 +10,7 @@ from .vcs import VCSConfig
 
 
 @dataclass
-class Config(FileConfigMixin, EnvVarsConfigMixin):
+class Config(FileConfigMixin, EnvVarsConfigMixin, CmdArgsMixin):
     mode: RUN_MODES = field(metadata=f.MODE.to_dict())
     vcs: VCSConfig
     stop_on_fail: bool = field(default=True, metadata=f.STOP_ON_FAIL.to_dict())
@@ -64,8 +64,5 @@ class Config(FileConfigMixin, EnvVarsConfigMixin):
         return cls.parse_env_vars()
 
     @classmethod
-    def _load_from_args(cls, config_overrides: ConfigParams | None = None):
-        if not config_overrides:
-            return {}
-
-        return config_overrides
+    def _load_from_args(cls, config_overrides: ConfigParams | None = None) -> ConfigParams:
+        return cls.get_config_from_args(config_overrides=config_overrides)
