@@ -41,7 +41,7 @@ class Automaton:
         config_overrides: ConfigParams | None = None,
         config_file_path: str | Path = "./automyte.cfg",
     ):
-        self.setup(config=self.config, config_overrides=config_overrides, config_file_path=config_file_path)
+        self.setup(config_overrides=config_overrides, config_file_path=config_file_path)
         self.validate(skip_validation)
 
         for project in self._get_target_projects():
@@ -109,14 +109,13 @@ class Automaton:
 
     def setup(
         self,
-        config: Config,
         config_file_path: str | Path,
         config_overrides: ConfigParams | None = None,
     ):
-        self.config = config.setup(config_file_path=config_file_path, config_overrides=config_overrides)
+        self.config.setup(config_file_path=config_file_path, config_overrides=config_overrides)
 
         for project in self.projects:
-            project.setup(config=config)
+            project.setup(config=self.config)
 
     def validate(self, skip_validation: bool):
         if skip_validation:

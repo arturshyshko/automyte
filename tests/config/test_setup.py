@@ -29,7 +29,7 @@ class TestConfigSetup:
     def test_apply_config_from_file(self, tmp_os_file):
         file: OSFile = tmp_os_file(self.cfg_file_contents, filename="automyte.cfg")
 
-        result = Config.setup(config_file_path=file.fullpath)
+        result = Config.get_default().setup(config_file_path=file.fullpath)
 
         assert result.mode == "amend"
         assert result.stop_on_fail is False
@@ -43,7 +43,7 @@ class TestConfigSetup:
         monkeypatch.setenv("AUTOMYTE_BASE_BRANCH", "main")
         monkeypatch.setenv("AUTOMYTE_ALLOW_PUBLISHING", "true")
 
-        result = Config.setup()
+        result = Config.get_default().setup()
 
         assert result.mode == "amend"
         assert result.stop_on_fail is False
@@ -58,7 +58,7 @@ class TestConfigSetup:
     def test_apply_config_from_args(self, monkeypatch):
         monkeypatch.setenv("AUTOMYTE_READ_CMD_ARGS", "true")
 
-        result = Config.setup()
+        result = Config.get_default().setup()
 
         assert result.mode == "amend"
         self.assert_defaults_preserved(config=result, overriden_fields=("mode"))
@@ -69,7 +69,7 @@ class TestConfigSetup:
         monkeypatch.setenv("AUTOMYTE_ALLOW_PUBLISHING", "false")
         monkeypatch.setenv("AUTOMYTE_BASE_BRANCH", "main")
 
-        result = Config.setup(config_file_path=file.fullpath)
+        result = Config.get_default().setup(config_file_path=file.fullpath)
 
         assert result.mode == "run"
         assert result.stop_on_fail is False
@@ -88,7 +88,7 @@ class TestConfigSetup:
 
         monkeypatch.setenv("AUTOMYTE_READ_CMD_ARGS", "true")
 
-        result = Config.setup(config_file_path=file.fullpath, config_overrides={})
+        result = Config.get_default().setup(config_file_path=file.fullpath, config_overrides={})
 
         assert result.mode == "run"
         assert result.target == "skipped"
