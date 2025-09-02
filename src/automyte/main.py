@@ -23,6 +23,8 @@ def console_main() -> int:
     try:
         code = main()
         sys.stdout.flush()
+        # add env var AUTOMYTE_READ_CMD_ARGS
+        os.environ["AUTOMYTE_READ_CMD_ARGS"] = "true"
     except BrokenPipeError:
         # Python flushes standard streams on exit; redirect remaining output
         # to devnull to avoid another BrokenPipeError at shutdown

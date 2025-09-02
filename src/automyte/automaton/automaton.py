@@ -1,3 +1,4 @@
+from pathlib import Path
 import typing as t
 
 from automyte.config import Config, ConfigParams
@@ -34,8 +35,13 @@ class Automaton:
         else:
             self.flow = TasksFlow(*tasks)
 
-    def run(self, skip_validation: bool = False, config_overrides: ConfigParams | None = None):
-        self.setup(config=self.config, config_overrides=config_overrides)
+    def run(
+        self,
+        skip_validation: bool = False,
+        config_overrides: ConfigParams | None = None,
+        config_file_path: str | Path = "./automyte.cfg",
+    ):
+        self.setup(config_overrides=config_overrides, config_file_path=config_file_path)
         self.validate(skip_validation)
 
         for project in self._get_target_projects():
@@ -101,11 +107,15 @@ class Automaton:
     def _update_history(self, project: Project, result: AutomatonRunResult):
         self.history.set_status(automaton_name=self.name, project_id=project.project_id, status=result)
 
-    def setup(self, config: Config, config_overrides: ConfigParams | None = None):
-        config.setup()
+    def setup(
+        self,
+        config_file_path: str | Path,
+        config_overrides: ConfigParams | None = None,
+    ):
+        self.config.setup(config_file_path=config_file_path, config_overrides=config_overrides)
 
         for project in self.projects:
-            project.setup(config=config)
+            project.setup(config=self.config)
 
     def validate(self, skip_validation: bool):
         if skip_validation:

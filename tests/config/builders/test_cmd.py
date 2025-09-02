@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from automyte.config import fields as config_fields
-from automyte.config.cmd import get_config_params_from_argv
+from automyte.config.builders.cmd import get_config_params_from_argv
 from automyte.config.config import ConfigParams
 from automyte.config.vcs import VCSConfig, VCSConfigParams
 
