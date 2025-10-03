@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import typing as t
-from dataclasses import dataclass
+from dataclasses import Field, dataclass
 
 RUN_MODES = t.Literal["run", "amend"]
 
@@ -48,6 +48,19 @@ class ConfigField:
             "file_param": self.file_param,
             "field_of": self.field_of,
         }
+
+    @classmethod
+    def from_field(cls, field: Field) -> "ConfigField":
+        return cls(
+            name=field.name,
+            default_value=field.metadata.get("default_value"),
+            kind=field.metadata.get("kind"),
+            description=field.metadata.get("description", ""),
+            argnames=field.metadata.get("argnames", None),
+            env_var=field.metadata.get("env_var", None),
+            file_param=field.metadata.get("file_param", None),
+            field_of=field.metadata.get("field_of", None),
+        )
 
 
 #################################################################
