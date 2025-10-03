@@ -4,13 +4,13 @@ from pathlib import Path
 import typing_extensions as te
 
 from . import fields as f
-from .builders import FileConfigMixin, EnvVarsConfigMixin
+from .builders import CmdArgsMixin, EnvVarsConfigMixin, FileConfigMixin
 from .fields import RUN_MODES, AutomatonTarget, ConfigParams
 from .vcs import VCSConfig
 
 
 @dataclass
-class Config(FileConfigMixin, EnvVarsConfigMixin):
+class Config(FileConfigMixin, EnvVarsConfigMixin, CmdArgsMixin):
     mode: RUN_MODES = field(metadata=f.MODE.to_dict())
     vcs: VCSConfig
     stop_on_fail: bool = field(default=True, metadata=f.STOP_ON_FAIL.to_dict())
@@ -64,5 +64,5 @@ class Config(FileConfigMixin, EnvVarsConfigMixin):
 
     @classmethod
     def _load_from_args(cls) -> ConfigParams:
-        return {}
+        return cls.get_config_from_args()
 
