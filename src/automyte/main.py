@@ -21,6 +21,7 @@ def console_main() -> int:
     """
     # https://docs.python.org/3/library/signal.html#note-on-sigpipe
     try:
+        os.environ["AUTOMYTE_CLI_MODE"] = "true"
         code = main()
         sys.stdout.flush()
     except BrokenPipeError:
