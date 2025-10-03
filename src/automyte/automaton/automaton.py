@@ -34,8 +34,8 @@ class Automaton:
         else:
             self.flow = TasksFlow(*tasks)
 
-    def run(self, skip_validation: bool = False, config_overrides: ConfigParams | None = None):
-        self.setup(config=self.config, config_overrides=config_overrides)
+    def run(self, skip_validation: bool = False):
+        self.setup(config=self.config)
         self.validate(skip_validation)
 
         for project in self._get_target_projects():
@@ -101,7 +101,7 @@ class Automaton:
     def _update_history(self, project: Project, result: AutomatonRunResult):
         self.history.set_status(automaton_name=self.name, project_id=project.project_id, status=result)
 
-    def setup(self, config: Config, config_overrides: ConfigParams | None = None):
+    def setup(self, config: Config):
         config.setup()
 
         for project in self.projects:

@@ -1,5 +1,3 @@
-import os
-
 from automyte.config.config import Config
 from automyte.config.fields import ConfigParams
 
