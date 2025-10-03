@@ -1,8 +1,10 @@
-from dataclasses import Field, dataclass
 import os
-from automyte.config.builders.metadata_parser import ConfigMetadataParser
-from automyte.config.fields import ConfigParams
 import typing as t
+from dataclasses import Field, dataclass
+
+from automyte.config.fields import ConfigParams
+
+from .metadata_parser import ConfigMetadataParser
 
 
 @dataclass

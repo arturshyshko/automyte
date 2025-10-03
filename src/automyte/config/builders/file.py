@@ -3,12 +3,12 @@ from __future__ import annotations
 import configparser
 import logging
 import typing as t
-from dataclasses import Field, dataclass, fields, is_dataclass
+from dataclasses import Field, dataclass
 from pathlib import Path
 
-from typing_extensions import override
+from automyte.config.fields import ConfigParams
 
-from ..fields import ConfigParams
+from .metadata_parser import ConfigMetadataParser
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,6 @@ class FileConfigMixin:
 
         else:
             raise ValueError(f"Received invalid file format for config file: {filepath}")
-        return {}
 
     @classmethod
     def _parse_cfg_file(cls, filepath: Path) -> "ConfigParams":
@@ -34,15 +33,7 @@ class FileConfigMixin:
         cfg = configparser.ConfigParser()
         cfg.read(str(filepath))
 
-        # Once get fields with "file_param" present in metadata, from nested child classes as well.
-        # Only works for 1 level of nesting.
-        fields_to_process: t.Sequence[Field] = []
-        for f in fields(cls):
-            if is_dataclass(f.type):
-                fields_to_process.extend(fields(f.type))
-            else:
-                fields_to_process.append(f)
-        fields_to_process = [f for f in fields_to_process if f.metadata.get("file_param", None)]
+        fields_to_process: t.Sequence[Field] = ConfigMetadataParser.get_fields_to_process(cls, "file_param")
 
         # Take location of the field in config file and in Config class and generate overrides.
         for field in fields_to_process:
@@ -51,12 +42,15 @@ class FileConfigMixin:
             field_name = field.metadata.get("name", field.name)
             kind = field.metadata.get("kind", str)
 
-            if kind is bool:
-                value = cfg.getboolean(section, param_name)
-            elif kind is int:
-                value = cfg.getint(section, param_name)
-            else:
-                value = cfg.get(section, param_name)
+            try:
+                if kind is bool:
+                    value = cfg.getboolean(section, param_name)
+                elif kind is int:
+                    value = cfg.getint(section, param_name)
+                else:
+                    value = cfg.get(section, param_name)
+            except configparser.NoOptionError:
+                continue
 
             if field_of == "config":
                 overrides[field_name] = value
@@ -65,4 +59,4 @@ class FileConfigMixin:
 
         overrides = {k: v for k, v in overrides.items() if v not in ({},)}
 
-        return overrides
+        return overrides  # type: ignore

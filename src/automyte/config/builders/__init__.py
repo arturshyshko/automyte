@@ -1,7 +1,7 @@
-from .file import FileConfigMixin
 from .env import EnvVarsConfigMixin
+from .file import FileConfigMixin
 
 __all__ = [
-    "FileConfigMixin",
     "EnvVarsConfigMixin",
+    "FileConfigMixin",
 ]
