@@ -20,11 +20,10 @@ class Config(FileConfigMixin, EnvVarsConfigMixin):
     def setup(
         cls,
         config_file_path: str | Path = "./automyte.cfg",
-        config_overrides: ConfigParams | None = None,
     ):
         """
         Set up configuration with the following precedence order:
-            1. Command line arguments (actually handled by cmd parser, we just get config_overrides)
+            1. Command line arguments
             2. Environment variables
             3. Config file
             4. Default values in class definition
@@ -32,8 +31,8 @@ class Config(FileConfigMixin, EnvVarsConfigMixin):
         config_values: ConfigParams = {}
         config_values.update(cls._load_from_config_file(config_file_path))
         config_values.update(cls._load_from_env())
-        config_values.update(cls._load_from_args(config_overrides=config_overrides))
         config = cls.get_default(**config_values)
+        config_values.update(cls._load_from_args())
 
         return config
 
@@ -64,8 +63,6 @@ class Config(FileConfigMixin, EnvVarsConfigMixin):
         return cls.parse_env_vars()
 
     @classmethod
-    def _load_from_args(cls, config_overrides: ConfigParams | None = None):
-        if not config_overrides:
-            return {}
+    def _load_from_args(cls) -> ConfigParams:
+        return {}
 
-        return config_overrides
