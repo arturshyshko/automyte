@@ -1,6 +1,6 @@
 import typing as t
 
-from automyte.config import Config, ConfigParams
+from automyte.config import Config
 from automyte.history import AutomatonRunResult, History, InMemoryHistory
 from automyte.project import Project, ProjectURI
 
@@ -19,7 +19,7 @@ class Automaton:
         history: History | None = None,
     ):
         self.name = name
-        self.config: Config = config or Config.get_default()
+        self.config: Config = config or Config()
         self.history: History = history or InMemoryHistory()
 
         self.projects: list[Project] = []
@@ -35,7 +35,7 @@ class Automaton:
             self.flow = TasksFlow(*tasks)
 
     def run(self, skip_validation: bool = False):
-        self.setup(config=self.config)
+        self.setup()
         self.validate(skip_validation)
 
         for project in self._get_target_projects():
@@ -101,11 +101,9 @@ class Automaton:
     def _update_history(self, project: Project, result: AutomatonRunResult):
         self.history.set_status(automaton_name=self.name, project_id=project.project_id, status=result)
 
-    def setup(self, config: Config):
-        config.setup()
-
+    def setup(self):
         for project in self.projects:
-            project.setup(config=config)
+            project.setup(config=self.config)
 
     def validate(self, skip_validation: bool):
         if skip_validation:

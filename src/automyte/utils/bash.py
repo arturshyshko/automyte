@@ -1,3 +1,4 @@
+import argparse
 import logging
 import subprocess
 import typing as t
@@ -22,3 +23,13 @@ def execute(command: list[str], path: str | Path | None = None):
     else:
         logging.warning("[CMD]: Failed running %s:\n%s", command, result.stderr.strip())
         return CMDOutput(output=result.stderr.strip(), status="fail")
+
+
+def str_to_bool(value: str) -> bool:
+    """Convert string values to boolean"""
+    if value.lower() in ("true", "1", "yes"):
+        return True
+    elif value.lower() in ("false", "0", "no"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError(f"Invalid boolean value: {value}")
