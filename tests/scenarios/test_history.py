@@ -9,6 +9,7 @@ from automyte import (
     Project,
     RunContext,
     TasksFlow,
+    VCSConfig,
     guards,
 )
 
@@ -21,7 +22,7 @@ def test_updates_history_to_success(tmp_local_project):
     filters = ContainsFilter(contains="hello")
     automaton = Automaton(
         name="hello",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         projects=[
             Project(explorer=LocalFilesExplorer(rootdir=rootdir1, filter_by=filters), project_id="proj1"),
             Project(explorer=LocalFilesExplorer(rootdir=rootdir2, filter_by=filters), project_id="proj2"),
@@ -44,7 +45,7 @@ def test_updates_to_fail(tmp_local_project):
     filters = ContainsFilter(contains="hello")
     automaton = Automaton(
         name="hello",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         projects=[
             Project(explorer=LocalFilesExplorer(rootdir=rootdir1, filter_by=filters), project_id="proj1"),
             Project(explorer=LocalFilesExplorer(rootdir=rootdir2, filter_by=filters), project_id="proj2"),

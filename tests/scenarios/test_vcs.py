@@ -34,7 +34,6 @@ def test_worktree_setup(tmp_local_project):
 
     Automaton(
         name="impl1",
-        config=Config.get_default(),
         projects=[
             Project(
                 project_id="test_project",

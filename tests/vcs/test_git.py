@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from automyte import Config, Git
+from automyte import Config, Git, VCSConfig
 from automyte.utils import bash
 
 
@@ -33,7 +33,7 @@ class TestGitPreserveState:
             unstaged_structure={"src": {"hello.txt": "don't touch me"}},
         )
 
-        with Git(rootdir=dir).preserve_state(Config.get_default().set_vcs(work_branch="verify").vcs) as new_workdir:
+        with Git(rootdir=dir).preserve_state(VCSConfig(work_branch="verify")) as new_workdir:
             # Running commands inside new workdir, not touching old state.
 
             bash.execute(["git", "-C", new_workdir, "add", "src"])
@@ -54,7 +54,7 @@ class TestGitPreserveState:
         dir = tmp_git_repo(initial_structure={"src": {"hello.txt": "hello git"}})
         initial_worktrees_count = len(bash.execute(["git", "-C", dir, "worktree", "list"]).output.splitlines())
 
-        with Git(rootdir=dir).preserve_state(Config.get_default().set_vcs(work_branch="verify").vcs):
+        with Git(rootdir=dir).preserve_state(VCSConfig(work_branch="verify")):
             worktrees_list = bash.execute(["git", "-C", dir, "worktree", "list"]).output
             assert "[verify]" in worktrees_list
             assert len(worktrees_list.split("\n")) == initial_worktrees_count + 1
@@ -63,7 +63,7 @@ class TestGitPreserveState:
         dir = tmp_git_repo(initial_structure={"src": {"hello.txt": "hello git"}})
         initial_worktrees_count = len(bash.execute(["git", "-C", dir, "worktree", "list"]).output.split("\n"))
 
-        with Git(rootdir=dir).preserve_state(Config.get_default().set_vcs(work_branch="verify").vcs):
+        with Git(rootdir=dir).preserve_state(VCSConfig(work_branch="verify")):
             ...
 
         worktrees_list = bash.execute(["git", "-C", dir, "worktree", "list"]).output.splitlines()
@@ -72,7 +72,7 @@ class TestGitPreserveState:
     def test_creates_worktree_in_a_child_dir(self, tmp_git_repo):
         dir = tmp_git_repo(initial_structure={"src": {"hello.txt": "hello git"}})
 
-        with Git(rootdir=dir).preserve_state(Config.get_default().set_vcs(work_branch="verify").vcs) as new_workdir:
+        with Git(rootdir=dir).preserve_state(VCSConfig(work_branch="verify")) as new_workdir:
             worktree_desc = bash.execute(["git", "-C", dir, "worktree", "list"]).output.splitlines()[1]
             assert Path(new_workdir).resolve().is_relative_to(Path(dir).resolve())
             assert new_workdir in worktree_desc
@@ -82,7 +82,7 @@ class TestGitPreserveState:
         git = Git(rootdir=dir)
         original_workdir = git.workdir
 
-        with git.preserve_state(Config.get_default().set_vcs(work_branch="verify").vcs) as new_workdir:
+        with git.preserve_state(VCSConfig(work_branch="verify")) as new_workdir:
             assert git.workdir == new_workdir
         assert git.workdir == original_workdir
 
@@ -91,6 +91,6 @@ class TestGitPreserveState:
         git = Git(rootdir=dir)
         original_workdir = git.workdir
 
-        with git.preserve_state(Config.get_default().set_vcs(dont_disrupt_prior_state=False).vcs) as new_workdir:
+        with git.preserve_state(VCSConfig(dont_disrupt_prior_state=False)) as new_workdir:
             assert len(bash.execute(["git", "-C", dir, "worktree", "list"]).output.splitlines()) == 1
             assert new_workdir == original_workdir

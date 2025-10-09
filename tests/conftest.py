@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from automyte.automaton.run_context import RunContext
-from automyte.config import Config
+from automyte.config import Config, VCSConfig
 from automyte.discovery import OSFile
 from automyte.history.types import AutomatonRunResult
 from automyte.project import Project
@@ -98,7 +98,7 @@ def run_ctx():
 
         return RunContext(
             automaton_name=automaton_name,
-            config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+            config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
             vcs=vcs,
             project=project,
             current_status=AutomatonRunResult("running"),

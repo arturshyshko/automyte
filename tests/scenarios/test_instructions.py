@@ -12,6 +12,7 @@ from automyte import (
     RunContext,
     TaskReturn,
     TasksFlow,
+    VCSConfig,
     guards,
 )
 
@@ -38,7 +39,7 @@ def test_skip_works_immediately_and_updates_history(tmp_local_project):
     history = InMemoryHistory()
     Automaton(
         name="impl1",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         history=history,
         projects=[
             Project(
@@ -61,7 +62,7 @@ def test_abort_works_immediately_and_updates_history(tmp_local_project):
     history = InMemoryHistory()
     Automaton(
         name="impl1",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         history=history,
         projects=[
             Project(
@@ -84,7 +85,7 @@ def test_task_exception_abort_run(tmp_local_project):
     history = InMemoryHistory()
     Automaton(
         name="impl1",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         history=history,
         projects=[
             Project(

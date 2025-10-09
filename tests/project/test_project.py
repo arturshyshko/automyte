@@ -71,7 +71,7 @@ class TestProjectInWorkingState:
     def test_calls_vcs_preserve_state(self):
         vcs = DummyVCS()
 
-        with Project("proj1", rootdir="smth", vcs=vcs).in_working_state(Config.get_default()):
+        with Project("proj1", rootdir="smth", vcs=vcs).in_working_state(Config()):
             ...
 
         assert vcs.preserve_state_called
@@ -80,7 +80,7 @@ class TestProjectInWorkingState:
         vcs = DummyVCS()
         project = Project("proj1", rootdir="smth", vcs=vcs)
 
-        with project.in_working_state(Config.get_default()):
+        with project.in_working_state(Config()):
             assert project.rootdir == "newdir"
         assert project.rootdir == "smth"
 
@@ -88,7 +88,7 @@ class TestProjectInWorkingState:
         vcs = DummyVCS()
         project = Project("proj1", rootdir="smth", vcs=vcs)
 
-        with project.in_working_state(Config.get_default()):
+        with project.in_working_state(Config()):
             assert project.explorer.get_rootdir() == "newdir"
         assert project.explorer.get_rootdir() == "smth"
 
