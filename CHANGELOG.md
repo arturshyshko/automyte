@@ -7,57 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] 2025-10-10
+
+### Added
+
+ - v0.2.0 Add support for argv as config overrides (5c55eda)
+ - v0.2.0 Set AUTOMYTE_CLI_MODE flag when called as automyte cli (3836ff2)
+ - v0.2.0 Add feature to create new file in tasks (af2f028)
+ - v0.2.0 Add support for setting config via environment variables (980aa33)
+ - v0.2.0 Setup basic CI/CD pipeline with tests (c9d4038)
+ - v0.2.0 Add support for .cfg file as config overrides (a88205b)
+ - v0.2.0 Add support for parsing config fields through command line (ba93b1d)
+
+### Changed
+
+ - v0.2.0 Refactor config setup (b42241d)
+ - v0.2.0 Shift supported python by +1 (497a827)
+ - v0.2.0 Move main cli to root folder (7a51b07)
+
+### Removed
+
+ - v0.2.0 Remove config_overrides in automaton.run (7e62b36)
+
 ## [0.1.13] 2025-04-06
 
-## Added
+### Added
 
 - v0.1.13 Add setup & validation phase to automaton (fc7dcb3)
 - v0.1.13 Add separate config file for pyright (0bf7025)
 
-## Changed
+### Changed
 
 - v0.1.13 Shift supported python by +1 (497a827)
 - v0.1.13 Move main cli to root folder (7a51b07)
 
-## Fixed
+### Fixed
 
 - v0.1.13 Fix tests (3868a99)
 
 ## [0.1.12] 2025-03-13
 
-## Added
+### Added
 
 - v0.1.12 Add IgnoreResult flow tasks (5ce60d2)
 
-## Changed
+### Changed
 
 - v0.1.12 Combine RunIf and RunOn conditionals into one flow.If (0ed11d4)
 - v0.1.12 Set all vcs tasks to fail if bash.execute fails (8934250)
 - v0.1.12 Use mixin for adding .flags functionality to vcs tasks (a2010fa)
 
-## Fixed
+### Fixed
 
 - v0.1.12 Generate default random project_id if it is not passed (df966a8)
 
 ## [0.1.11] 2025-03-11
 
-## Added
+### Added
 
 - v0.1.11 Add PathFilter for filtering files by folder or name (90772c3)
 
-## Changed
+### Changed
 
 - v0.1.11 Add validation for project dirs + allow passing "~/" (bde4649)
 
 ## [0.1.10] 2025-03-11
 
-## Changed
+### Changed
 
 - v0.1.10 Allow passing plain folder URIs to projects section for automaton (27551b9)
 
 ## [0.1.9] 2025-03-11
 
-## Added
+### Added
 
 - v0.1.9 Add `ignorable_locations` to local files explorer (3d9511e)
 - v0.1.9 Add initial simplest example test (5e444ae)
