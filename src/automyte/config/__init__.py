@@ -1,11 +1,9 @@
 from .config import Config
-from .fields import ConfigParams, SupportedVCS, VCSConfigParams
+from .fields import ConfigField
 from .vcs import VCSConfig
 
 __all__ = [
     "Config",
-    "ConfigParams",
-    "SupportedVCS",
+    "ConfigField",
     "VCSConfig",
-    "VCSConfigParams",
 ]

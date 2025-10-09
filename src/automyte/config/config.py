@@ -1,68 +1,60 @@
-from dataclasses import dataclass, field
-from pathlib import Path
-
-import typing_extensions as te
-
-from . import fields as f
-from .builders import CmdArgsMixin, EnvVarsConfigMixin, FileConfigMixin
-from .fields import RUN_MODES, AutomatonTarget, ConfigParams
+from .fields import RUN_MODES, AutomatonTarget, ConfigField, ProjectID
+from .mappers import CMDArgsMapper, EnvVarsMapper, FileConfigMapper
 from .vcs import VCSConfig
 
 
-@dataclass
-class Config(FileConfigMixin, EnvVarsConfigMixin, CmdArgsMixin):
-    mode: RUN_MODES = field(metadata=f.MODE.to_dict())
+class Config:
+    """Main container for holding all automaton settings.
+
+    Set up configuration with the following precedence order:
+        0. User defined input: `Automaton(..., config=Config(mode="amend",...)).run()
+        1. Command line arguments (taken from field.argnames)
+        2. Environment variables (taken from field.env_var)
+        3. Config file (taken from field.file_param)
+        4. Default values in field definition (taken from field.defaulf_value)
+    """
+
+    _cmd_getter = CMDArgsMapper()
+    _env_getter = EnvVarsMapper()
+    _file_getter = FileConfigMapper()
     vcs: VCSConfig
-    stop_on_fail: bool = field(default=True, metadata=f.STOP_ON_FAIL.to_dict())
-    target: AutomatonTarget = field(default="all", metadata=f.TARGET.to_dict())
 
-    @classmethod
-    def setup(
-        cls,
-        config_file_path: str | Path = "./automyte.cfg",
-    ):
-        """
-        Set up configuration with the following precedence order:
-            1. Command line arguments
-            2. Environment variables
-            3. Config file
-            4. Default values in class definition
-        """
-        config_values: ConfigParams = {}
-        config_values.update(cls._load_from_config_file(config_file_path))
-        config_values.update(cls._load_from_env())
-        config = cls.get_default(**config_values)
-        config_values.update(cls._load_from_args())
+    mode: ConfigField[RUN_MODES] = ConfigField(
+        ...,
+        kind=RUN_MODES,
+        argnames=["-m", "--mode"],
+        env_var="AUTOMYTE_MODE",
+        file_param="config.mode",
+    )
+    stop_on_fail: ConfigField[bool] = ConfigField(
+        default_value=True,
+        kind=bool,
+        argnames=["-sf", "--stop-on-fail"],
+        env_var="AUTOMYTE_STOP_ON_FAIL",
+        file_param="config.stop_on_fail",
+    )
+    target = ConfigField(
+        default_value="all",
+        kind=AutomatonTarget | ProjectID,
+        argnames=["-t", "--target"],
+        env_var="AUTOMYTE_TARGET",
+        file_param="config.target",
+    )
 
-        return config
+    def __init__(
+        self,
+        mode: RUN_MODES | None = None,
+        stop_on_fail: bool | None = None,
+        target: AutomatonTarget | ProjectID | None = None,
+        vcs: VCSConfig | None = None,
+    ) -> None:
+        if mode is not None:
+            self.mode = mode
 
-    @classmethod
-    def get_default(cls, **kwargs: te.Unpack[ConfigParams]):
-        defaults = ConfigParams(
-            mode="run",
-            stop_on_fail=True,
-        )
-        defaults.update(**kwargs)
-        vcs_defaults = defaults.pop("vcs", {})
+        if stop_on_fail is not None:
+            self.stop_on_fail = stop_on_fail
 
-        return cls(
-            vcs=VCSConfig.get_default(**vcs_defaults),
-            **defaults,  # pyright: ignore (vcs already assigned)
-        )
+        if target is not None:
+            self.target = target
 
-    def set_vcs(self, **kwargs):
-        self.vcs = VCSConfig.get_default(**kwargs)
-        return self
-
-    @classmethod
-    def _load_from_config_file(cls, config_file_path: str | Path = "./automyte.cfg") -> ConfigParams:
-        return cls.parse_config_file(Path(config_file_path).resolve())
-
-    @classmethod
-    def _load_from_env(cls) -> ConfigParams:
-        return cls.parse_env_vars()
-
-    @classmethod
-    def _load_from_args(cls) -> ConfigParams:
-        return cls.get_config_from_args()
-
+        self.vcs = vcs or VCSConfig()
