@@ -5,14 +5,11 @@ from automyte import (
     AutomatonRunResult,
     Config,
     ContainsFilter,
-    File,
     InMemoryHistory,
     LocalFilesExplorer,
     Project,
-    RunContext,
-    TaskReturn,
     TasksFlow,
-    guards,
+    VCSConfig,
 )
 
 
@@ -25,7 +22,7 @@ def test_targetting_by_target_id(tmp_local_project):
     history.set_status("hello", "proj2", AutomatonRunResult(status="new"))
     filters = ContainsFilter(contains="hello")
 
-    config = Config.get_default(target="proj1").set_vcs(dont_disrupt_prior_state=False)
+    config = Config(target="proj1", vcs=VCSConfig(dont_disrupt_prior_state=False))
 
     automaton = Automaton(
         name="hello",
@@ -61,7 +58,7 @@ def test_targetting_by_status(tmp_local_project, initial_status, target_status):
     history.set_status("hello", "proj2", AutomatonRunResult(status="new"))
     filters = ContainsFilter(contains="hello")
 
-    config = Config.get_default(target=target_status).set_vcs(dont_disrupt_prior_state=False)
+    config = Config(target=target_status, vcs=VCSConfig(dont_disrupt_prior_state=False))
 
     automaton = Automaton(
         name="hello",

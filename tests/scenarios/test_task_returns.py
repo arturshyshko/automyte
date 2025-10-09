@@ -12,6 +12,7 @@ from automyte import (
     RunContext,
     TaskReturn,
     TasksFlow,
+    VCSConfig,
     guards,
 )
 
@@ -31,7 +32,7 @@ def test_simple_return_with_one_file(tmp_local_project):
 
     Automaton(
         name="impl1",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         projects=[
             Project(
                 project_id="test_project",
@@ -50,7 +51,7 @@ def test_simple_return_with_multiple_files(tmp_local_project):
 
     Automaton(
         name="impl1",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         projects=[
             Project(
                 project_id="test_project",

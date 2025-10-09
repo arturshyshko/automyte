@@ -9,6 +9,7 @@ from automyte import (
     Project,
     RunContext,
     TasksFlow,
+    VCSConfig,
     conditionals,
     flow,
     guards,
@@ -27,7 +28,7 @@ def test_guards_simple(tmp_local_project):
 
     Automaton(
         name="impl1",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         projects=[
             Project(
                 project_id="test_project",

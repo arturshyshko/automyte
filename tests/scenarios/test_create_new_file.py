@@ -1,5 +1,5 @@
 from automyte import Automaton
-from automyte.config.config import Config
+from automyte.config.config import Config, VCSConfig
 from automyte.tasks import fs, vcs
 from automyte.utils import bash
 
@@ -15,7 +15,7 @@ def test_create_new_file(tmp_git_repo):
 
     Automaton(
         name="create_new_file",
-        config=Config.get_default().set_vcs(dont_disrupt_prior_state=False),
+        config=Config(vcs=VCSConfig(dont_disrupt_prior_state=False)),
         projects=[directory],
         tasks=[
             fs.create("src/some_python_file.py", file_contents),

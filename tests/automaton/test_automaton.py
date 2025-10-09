@@ -83,13 +83,10 @@ class TestAutomatonTargetting:
         history.set_status("auto", "proj_skipped", AutomatonRunResult(status="skipped"))
         history.set_status("auto", "custom_id", AutomatonRunResult(status="new"))
 
-        config = Config.get_default()
-        config.target = target
-
         Automaton(
             "auto",
             history=history,
-            config=config,
+            config=Config(target=target),
             projects=[
                 Project("proj_new", explorer=DummyExplorer(), vcs=DummyVCS()),
                 Project("proj_fail", explorer=DummyExplorer(), vcs=DummyVCS()),
@@ -107,12 +104,9 @@ class TestAutomatonTargetting:
         ran_for = []
         mark_project = lambda ctx, file: ran_for.append(ctx.project.project_id)
 
-        config = Config.get_default()
-        config.target = "somecustomid"
-
         Automaton(
             "auto",
-            config=config,
+            config=Config(target="somecustomid"),
             projects=[Project("somecustomid", explorer=DummyExplorer(), vcs=DummyVCS())],
             tasks=TasksFlow(postprocess=[mark_project]),
         ).run(skip_validation=True)
