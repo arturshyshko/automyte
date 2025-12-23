@@ -1,13 +1,12 @@
 import os
 from argparse import ArgumentParser
 
+from automyte._cmd import RunArgParser
 from automyte.utils.bash import str_to_bool
-
-AUTOMYTE_CLI_PARSER = ArgumentParser(description="Run automaton.")
 
 
 class CMDArgsMapper:
-    def __init__(self, parser: ArgumentParser = AUTOMYTE_CLI_PARSER) -> None:
+    def __init__(self, parser: ArgumentParser = RunArgParser) -> None:
         self.parser = parser
         self._args = None
 

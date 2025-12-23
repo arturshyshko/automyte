@@ -1,16 +1,28 @@
 import enum
+import logging
 import os
 import sys
 import typing as t
+from argparse import Namespace
+
+from ._cmd import AutomyteArgParser, execute_automaton, find_automaton_module
+
+logger = logging.getLogger(__name__)
 
 
 @t.final
 class ExitCode(enum.IntEnum):
     OK = 0
-    MIGRATION_FAILED = 1
+    AUTOMATON_FAILED = 1
 
 
-def main() -> ExitCode:
+def main(args: Namespace) -> ExitCode:
+    try:
+        execute_automaton(find_automaton_module(args))
+    except Exception as e:
+        logger.error(e)
+        return ExitCode.AUTOMATON_FAILED
+
     return ExitCode.OK
 
 
@@ -22,7 +34,8 @@ def console_main() -> int:
     # https://docs.python.org/3/library/signal.html#note-on-sigpipe
     try:
         os.environ["AUTOMYTE_CLI_MODE"] = "true"
-        code = main()
+        args = AutomyteArgParser.parse_args()
+        exit_code = main(args)
         sys.stdout.flush()
     except BrokenPipeError:
         # Python flushes standard streams on exit; redirect remaining output
@@ -31,4 +44,4 @@ def console_main() -> int:
         os.dup2(devnull, sys.stdout.fileno())
         return 1  # Python exits with error code 1 on EPIPE
     else:
-        return code
+        return exit_code

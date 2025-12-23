@@ -38,6 +38,8 @@ def test_file_filtering(tmp_git_repo):
     Automaton(
         name="filter_files",
         projects=[
+            "~/projects/path1",
+            "~/projects/path2",
             Project(
                 explorer=LocalFilesExplorer(
                     rootdir=directory,

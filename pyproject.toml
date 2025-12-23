@@ -37,6 +37,9 @@ automyte = "automyte:console_main"
 [tool.hatch.version]
 path = "src/automyte/__about__.py"
 
+[tool.hatch.envs.default]
+installer = "uv"
+
 [[tool.hatch.envs.hatch-test.matrix]]
 python = ["3.11", "3.12", "3.13"]
 
@@ -53,6 +56,7 @@ addopts = "-rfE --last-failed"
 
 [tool.hatch.envs.dev]
 template = "default"
+installer = "uv"
 dependencies = [
   "pytest",
   "python-lsp-server[all]",
